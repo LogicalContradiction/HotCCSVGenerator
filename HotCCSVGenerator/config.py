@@ -1,0 +1,2 @@
+PATTERN = r"=+"
+FILE_ENCODING= "utf8"
