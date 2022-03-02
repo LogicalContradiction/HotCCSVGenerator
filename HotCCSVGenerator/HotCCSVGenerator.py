@@ -55,6 +55,9 @@ def extractFieldsFromSiteData(data: str) -> Card:
     pass
     
 def extractAndFormatTextField(data: str)->str:
+    """
+    Use to extract the "TEXT" field from the card
+    """    
     #first extract textline
     try:
         textLine = data[data.index(config.TEXTLINE_STARTER)+len(config.TEXTLINE_STARTER):]
@@ -80,6 +83,20 @@ def extractAndFormatTextField(data: str)->str:
         text.append(textLine)
     text = [item.replace(config.NEWLINE_CHAR, "") for item in text]
     return config.NEWLINE_CHAR.join(text)
+    
+def extractDataFromLine(line: str, indexes: Dict[str, int])->Dict[str, str]:
+    """
+    Pass in a dict in the form {fieldName : indexWhenSplitByWhitespace}
+    Extracts those indexes and returns dict in form {fieldName : textData}
+    """
+    #first split the line on whitespace
+    splitLine = re.split(config.WHITESPACE_PATTERN, line)
+    #now go through the dict and extract the indexes that you need
+    result = {}
+    for key in indexes:
+        result[key] = splitLine[indexes[key]]
+        
+    return result
     
     
 def writeLinesToCSVFile(filepath: str, data):

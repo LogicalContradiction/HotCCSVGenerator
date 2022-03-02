@@ -133,6 +133,27 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         result = hotCCSVGenerator.extractAndFormatTextField(strippedDataStrEmptyText)
         self.assertEqual(result, "", "Make sure you didn't change strippedDataStrEmptyText.")
         
+    def test_extractDataFromLine_TwoValues(self):
+        line = "Card No.: QQ/Z21-777MM  Rarity: MM"
+        dictionary = {"cardNum": 2,
+                      "rarity": 4}
+        result = hotCCSVGenerator.extractDataFromLine(line, dictionary)
+        
+        self.assertEqual(result["cardNum"], "QQ/Z21-777MM")
+        self.assertEqual(result["rarity"], "MM")
+        
+    def test_extractDataFromLine_FourIntValues(self):
+        line = "Level: 69   Cost: 70   Power: 9001   Soul: 1"
+        dictionary = {"level": 1,
+                      "cost": 3,
+                      "power": 5,
+                      "soul": 7}
+        result = hotCCSVGenerator.extractDataFromLine(line, dictionary)          
+        
+        self.assertEqual(result["level"], "69")
+        self.assertEqual(result["cost"], "70")
+        self.assertEqual(result["power"], "9001")
+        self.assertEqual(result["soul"], "1")                        
     
 
 if __name__ == "__main__":
