@@ -109,6 +109,7 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
             skip = not skip
             continue
         result.append(dataLine.strip())
+    del result[len(result)-1]
     return result
     
     

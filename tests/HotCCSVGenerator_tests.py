@@ -194,6 +194,7 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         with open(TEST_FILE, "r", encoding=FILE_ENCODING) as file:
             soup = BeautifulSoup(file, "html.parser")
         data = hotCCSVGenerator.getLinesFromSoup(soup)
+        self.assertEqual(len(data), 2)
         self.assertEqual(data[0], WEBPAGE_DATA_ONE)
         self.assertEqual(data[1], WEBPAGE_DATA_TWO)
         
