@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import mock_open, patch, call
 from pathlib import Path
 from bs4 import BeautifulSoup
+import builtins
 
 from hotCCSVGenerator import hotCCSVGenerator
 
@@ -37,6 +39,38 @@ dataTwo = {"name": "成歩堂 龍",
         "flavor": "",
         "text": "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M,\nQCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"
         }
+TEST_DATA_ONE_NEWLINES_REMOVED = {"name": "ボブ",
+                                  "translatedName": "Bob",
+                                  "cardNum": "AA/Z00-069 ZZ",
+                                  "rarity": "ZZ",
+                                  "color": "purple",
+                                  "side": "Weiss",
+                                  "type": "Character",
+                                  "level": 42,
+                                  "cost": 500,
+                                  "power": 0,
+                                  "soul": 22,
+                                  "traits": "magic (mag), wisdom (wis)",
+                                  "triggers": "soul",
+                                  "flavor": "flavor text goes here",
+                                  "text": "[Z] When that thing happens, do the other thing.\n[A] According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. Ya like jazz?\n[Q] [(7) Discard everything] Do the other thing."
+                                 }  
+TEST_CSV_HEADERS = ["name", 
+                         "translatedName", 
+                         "cardNum",
+                         "rarity",
+                         "color",
+                         "side",
+                         "type",
+                         "level",
+                         "cost",
+                         "power",
+                         "soul",
+                         "traits",
+                         "triggers",
+                         "flavor",
+                         "text"]                                 
+
 strippedDataStr = """Phoenix Wright
 成歩堂 龍
 Card No.: QQ/Z21-777MM  Rarity: MM
@@ -198,6 +232,39 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         self.assertEqual(data[0], WEBPAGE_DATA_ONE)
         self.assertEqual(data[1], WEBPAGE_DATA_TWO)
         
+    def test_writeCardsToCSVFile(self):
+        TEST_FILE = Path(__file__).parent /"testData/testCSVFile.csv"
+        global dataOne
+        c = hotCCSVGenerator.Card(dataOne)
+        cardData = [c]
+        hotCCSVGenerator.writeCardsToCSVFile(TEST_FILE, cardData)
+        self.assertEqual(0,0)
+        
+    def test_writeCardsToCSVFile_withMock(self):
+        m = mock_open()
+        global TEST_DATA_ONE_NEWLINES_REMOVED
+        global TEST_CSV_HEADERS
+        c = hotCCSVGenerator.Card(TEST_DATA_ONE_NEWLINES_REMOVED)
+        cardData = [c]
+        fakeFilepath = "testdir/testfile.csv"
+        resultCSVHeaders = "\t".join(TEST_CSV_HEADERS) + "\r\n"
+        calls = [call(resultCSVHeaders)]
+        for card in cardData:
+            r = []
+            for key in card:
+                if key == "text":
+                    r.append("\"" + card[key] + "\"")
+                else:
+                    r.append(card[key])
+            res = "\t".join(str(a) for a in r) + "\r\n"
+            calls.append(call(res))
+        
+        with patch("builtins.open", m) as mockedFile:
+            hotCCSVGenerator.writeCardsToCSVFile(fakeFilepath, cardData)
+            #assert if opened file on write mode "w"
+            mockedFile.assert_called_once_with(fakeFilepath, "w", encoding="utf8", newline="")
+            #assert if write cas called from the file opened with in the order and with the params of calls 
+            mockedFile().write.assert_has_calls(calls)
             
     
 

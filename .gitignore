@@ -157,3 +157,5 @@ notes.txt
 webpages/
 #environment file
 .env
+#testoutput
+tests/testData/testCSVFile.csv

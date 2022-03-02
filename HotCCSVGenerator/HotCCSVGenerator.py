@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import re
 import requests
 from typing import TypedDict, Dict
+from pathlib import Path
+import csv
 
 class Card(TypedDict):
     name: str
@@ -29,7 +31,7 @@ class Card(TypedDict):
             and self.rarity == other.rarity \
             and self.color == other.color \
             and self.side == other.side \
-            and self.character == other.character \
+            and self.type == other.type \
             and self.level == other.level \
             and self.cost == other.cost \
             and self.power == other.power \
@@ -114,8 +116,17 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
     
     
     
-def writeLinesToCSVFile(filepath: str, data):
-    pass
+def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
+    """
+    Open a file and write a list of Cards to items
+    """
+    #open the file
+    with open(filepath, "w", encoding=config.FILE_ENCODING, newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=config.CSV_WRITER_FIELDNAMES, delimiter=config.CSV_DELIMITER)
+        writer.writeheader()
+        for card in cardData:
+            writer.writerow(card)
+    return
     
     
 
