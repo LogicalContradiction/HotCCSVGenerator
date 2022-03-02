@@ -2,8 +2,7 @@ from . import config
 from bs4 import BeautifulSoup
 import re
 import requests
-from typing import TypedDict
-
+from typing import TypedDict, Dict
 
 class Card(TypedDict):
     name: str
@@ -43,14 +42,50 @@ class Card(TypedDict):
         
 
       
-def makeSoupFromFile(filepath):
+def makeSoupFromFile(filepath: str):
     with open(filepath, "r", encoding=config.FILE_ENCODING) as file:
         soup = BeautifulSoup(file, "html.parser")
     return soup
     
-def makeSoupFromWebpage(url):
+def makeSoupFromWebpage(url: str):
     req = requests.get(url)
     return BeautifulSoup(req.text, "html.parser")
+
+def extractFieldsFromSiteData(data: str) -> Card:
+    pass
+    
+def extractAndFormatTextField(data: str)->str:
+    #first extract textline
+    try:
+        textLine = data[data.index(config.TEXTLINE_STARTER)+len(config.TEXTLINE_STARTER):]
+    except ValueError as exc:
+        return None
+    #create list to hold all the indexes of pattern that start a newline
+    startIndexes = []
+    for match in re.finditer(config.TEXTLINE_PATTERN, textLine):
+        startIndexes.append(match.start())
+        
+    index = 0
+    text = []
+    while index < len(startIndexes) and len(startIndexes) > 1:
+        #grab startIndex at locations index and index+1 and slice the string at those indexes
+        t = textLine[startIndexes[index]:startIndexes[index+1]]
+        text.append(t)
+        index +=2
+    if len(startIndexes) > 0:
+        #slice the last line of text that wouldn't be added above
+        text.append(textLine[startIndexes[len(startIndexes)-1]:])
+    else:
+        #no matches, so this line is different, just append it
+        text.append(textLine)
+    text = [item.replace(config.NEWLINE_CHAR, "") for item in text]
+    return config.NEWLINE_CHAR.join(text)
+    
+    
+def writeLinesToCSVFile(filepath: str, data):
+    pass
+    
+    
 
 
 if __name__ == "__main__":

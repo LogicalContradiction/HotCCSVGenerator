@@ -2,13 +2,13 @@ import unittest
 
 from hotCCSVGenerator import hotCCSVGenerator
 
-data = {"name": "ボブ",
+dataOne = {"name": "ボブ",
         "translatedName": "Bob",
         "cardNum": "AA/Z00-069 ZZ",
         "rarity": "ZZ",
         "color": "purple",
-        "side": "W",
-        "type": "character",
+        "side": "Weiss",
+        "type": "Character",
         "level": 42,
         "cost": 500,
         "power": 0,
@@ -16,36 +16,122 @@ data = {"name": "ボブ",
         "traits": "magic (mag), wisdom (wis)",
         "triggers": "soul",
         "flavor": "flavor text goes here",
-        "text": "When that happens, do the other thing."
+        "text": "[Z] When that thing happens, do the other thing.\n[A] According to all known laws of aviation, there is no way a bee should be\nable to fly. Its wings are too small to get its fat little body off the ground.\nYa like jazz?\n[Q] [(7) Discard everything] Do the other thing."
         }
+        
+dataTwo = {"name": "成歩堂 龍",
+        "translatedName": "Phoenix Wright",
+        "cardNum": "QQ/Z21-777 MM",
+        "rarity": "MMM",
+        "color": "Green",
+        "side": "Weiss",
+        "type": "Climax",
+        "level": 69,
+        "cost": 70,
+        "power": 9001,
+        "soul": 1,
+        "traits": "intelligence (int), luck (lck)",
+        "triggers": "Draw",
+        "flavor": "",
+        "text": "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M,\nQCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"
+        }
+strippedDataStr = """Phoenix Wright
+成歩堂 龍
+Card No.: QQ/Z21-777MM  Rarity: MM
+Color: Green   Side: Weiss  Climax
+Level: 69   Cost: 70   Power: 9001   Soul: 1
+Traits: intelligence (int), luck (lck)
+Triggers: Draw
+Flavor: 
+TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, 
+QCF.L+M
+[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"""
+
+strippedDataStrEmptyText = """Phoenix Wright
+成歩堂 龍
+Card No.: QQ/Z21-777MM  Rarity: MM
+Color: Green   Side: Weiss  Climax
+Level: 69   Cost: 70   Power: 9001   Soul: 1
+Traits: intelligence (int), luck (lck)
+Triggers: Draw
+Flavor: 
+TEXT: """
+
+strippedDataStrOneText = """Phoenix Wright
+成歩堂 龍
+Card No.: QQ/Z21-777MM  Rarity: MM
+Color: Green   Side: Weiss  Climax
+Level: 69   Cost: 70   Power: 9001   Soul: 1
+Traits: intelligence (int), luck (lck)
+Triggers: Draw
+Flavor: 
+TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, 
+QCF.L+M"""
+
+strippedDataStrNoText = """Phoenix Wright
+成歩堂 龍
+Card No.: QQ/Z21-777MM  Rarity: MM
+Color: Green   Side: Weiss  Climax
+Level: 69   Cost: 70   Power: 9001   Soul: 1
+Traits: intelligence (int), luck (lck)
+Triggers: Draw
+Flavor: 
+TEXT:"""
+
 
 class HotCCSVGeneratorTest(unittest.TestCase):
     
     def test_Card_Object_Creation(self):
-        global data
-        card = hotCCSVGenerator.Card(data)
+        global dataOne
+        card = hotCCSVGenerator.Card(dataOne)
         
-        self.assertEqual(card["name"],data["name"])
-        self.assertEqual(card["translatedName"],data["translatedName"])
-        self.assertEqual(card["cardNum"],data["cardNum"])
-        self.assertEqual(card["rarity"],data["rarity"])
-        self.assertEqual(card["color"],data["color"])
-        self.assertEqual(card["side"],data["side"])
-        self.assertEqual(card["type"],data["type"])
-        self.assertEqual(card["level"],data["level"])
-        self.assertEqual(card["cost"],data["cost"])
-        self.assertEqual(card["power"],data["power"])
-        self.assertEqual(card["soul"],data["soul"])
-        self.assertEqual(card["traits"],data["traits"])
-        self.assertEqual(card["triggers"],data["triggers"])
-        self.assertEqual(card["flavor"],data["flavor"])
-        self.assertEqual(card["text"],data["text"])
+        self.assertEqual(card["name"],dataOne["name"])
+        self.assertEqual(card["translatedName"],dataOne["translatedName"])
+        self.assertEqual(card["cardNum"],dataOne["cardNum"])
+        self.assertEqual(card["rarity"],dataOne["rarity"])
+        self.assertEqual(card["color"],dataOne["color"])
+        self.assertEqual(card["side"],dataOne["side"])
+        self.assertEqual(card["type"],dataOne["type"])
+        self.assertEqual(card["level"],dataOne["level"])
+        self.assertEqual(card["cost"],dataOne["cost"])
+        self.assertEqual(card["power"],dataOne["power"])
+        self.assertEqual(card["soul"],dataOne["soul"])
+        self.assertEqual(card["traits"],dataOne["traits"])
+        self.assertEqual(card["triggers"],dataOne["triggers"])
+        self.assertEqual(card["flavor"],dataOne["flavor"])
+        self.assertEqual(card["text"],dataOne["text"])
         
     def test_Card_Object_eq(self):
-        global data
-        card1 = hotCCSVGenerator.Card(data)
-        card2 = hotCCSVGenerator.Card(data)
+        global dataOne
+        card1 = hotCCSVGenerator.Card(dataOne)
+        card2 = hotCCSVGenerator.Card(dataOne)
         self.assertEqual(card1, card2, "Made with the same data, should be the same.")
+    
+    def test_extractAndFormatTextField_MultipleTextLines(self):
+        global strippedDataStr
+
+        result = hotCCSVGenerator.extractAndFormatTextField(strippedDataStr)
+        self.assertEqual(result, "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, QCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H",\
+        "Make sure you didn't change strippedDataStr.")
+        
+    def test_extractAndFormatTextField_OneTextLine(self):
+        global strippedDataStrOneText
+        
+        result = hotCCSVGenerator.extractAndFormatTextField(strippedDataStrOneText)
+        self.assertEqual(result, "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, QCF.L+M",\
+        "Make sure you didn't change strippedDataStrOneText.")
+    
+    def test_extractAndFormatTextField_NoTextLine(self):
+        global strippedDataStrNoText
+        
+        result = hotCCSVGenerator.extractAndFormatTextField(strippedDataStrNoText)
+        self.assertEqual(result, None, "Result: %s\nMake sure you didn't change strippedDataStrNoText." % result)
+    
+    def test_extractAndFormatTextField_EmptyTextLines(self):
+        global strippedDataStrEmptyText
+        
+        result = hotCCSVGenerator.extractAndFormatTextField(strippedDataStrEmptyText)
+        self.assertEqual(result, "", "Make sure you didn't change strippedDataStrEmptyText.")
         
     
 
