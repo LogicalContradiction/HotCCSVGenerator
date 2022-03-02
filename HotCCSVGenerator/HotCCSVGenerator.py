@@ -50,9 +50,6 @@ def makeSoupFromFile(filepath: str):
 def makeSoupFromWebpage(url: str):
     req = requests.get(url)
     return BeautifulSoup(req.text, "html.parser")
-
-def extractFieldsFromSiteData(data: str) -> Card:
-    pass
     
 def extractAndFormatTextField(data: str)->str:
     """
@@ -97,6 +94,23 @@ def extractDataFromLine(line: str, indexes: Dict[str, int])->Dict[str, str]:
         result[key] = splitLine[indexes[key]]
         
     return result
+
+def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
+    """
+    Extract the lines of data from Soup to turn into cards
+    """
+    text = soup.pre.text
+    lines = re.split(config.PATTERN, text)
+    skip = True
+    result = []
+    for dataLine in lines:
+        if skip:
+            #the first line is a dataline, ignore it
+            skip = not skip
+            continue
+        result.append(dataLine.strip())
+    return result
+    
     
     
 def writeLinesToCSVFile(filepath: str, data):

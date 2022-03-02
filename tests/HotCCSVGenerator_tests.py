@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+from bs4 import BeautifulSoup
 
 from hotCCSVGenerator import hotCCSVGenerator
 
@@ -78,6 +80,35 @@ Triggers: Draw
 Flavor: 
 TEXT:"""
 
+#TEST_FILE = pathlib.Path(__file__).parent.joinpath("/testData/testWebpage.html")
+FILE_ENCODING = "utf8"
+
+WEBPAGE_DATA_ONE = """Bob
+ボブ
+Card No.: AA/Z00-069ZZ  Rarity: ZZ
+Color: purple   Side: Weiss  Character
+Level: 42   Cost: 500   Power: 0   Soul: 22
+Traits: magic (mag), wisdom (wis)
+Triggers: soul
+Flavor: flavor text goes here
+TEXT: [Z] When that thing happens, do the other thing.
+[A] According to all known laws of aviation, there is no way a bee should be
+able to fly. Its wings are too small to get its fat little body off the ground.
+Ya like jazz?
+[Q] [(7) Discard everything] Do the other thing."""
+
+WEBPAGE_DATA_TWO = """Phoenix Wright
+成歩堂 龍
+Card No.: QQ/Z21-777MM  Rarity: MMM
+Color: Green   Side: Weiss  Climax
+Level: 69   Cost: 70   Power: 9001   Soul: 1
+Traits: intelligence (int), luck (lck)
+Triggers: Draw
+Flavor: 
+TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, 
+QCF.L+M
+[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"""
+
 
 class HotCCSVGeneratorTest(unittest.TestCase):
     
@@ -153,7 +184,20 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         self.assertEqual(result["level"], "69")
         self.assertEqual(result["cost"], "70")
         self.assertEqual(result["power"], "9001")
-        self.assertEqual(result["soul"], "1")                        
+        self.assertEqual(result["soul"], "1") 
+
+    def test_getLinesFromSoup(self):
+        TEST_FILE = Path(__file__).parent / "testData/testWebpage.html"
+        global FILE_ENCODING
+        global WEBPAGE_DATA_ONE
+        global WEBPAGE_DATA_TWO
+        with open(TEST_FILE, "r", encoding=FILE_ENCODING) as file:
+            soup = BeautifulSoup(file, "html.parser")
+        data = hotCCSVGenerator.getLinesFromSoup(soup)
+        self.assertEqual(data[0], WEBPAGE_DATA_ONE)
+        self.assertEqual(data[1], WEBPAGE_DATA_TWO)
+        
+            
     
 
 if __name__ == "__main__":
