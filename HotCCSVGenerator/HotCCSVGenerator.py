@@ -66,28 +66,27 @@ def extractAndFormatTextField(data: str)->str:
     startIndexes = []
     for match in re.finditer(config.TEXTLINE_PATTERN, textLine):
         startIndexes.append(match.start())
-        
-    index = 0
+    startIndexes.append(len(textLine))
+    index = -1
     text = []
-    while index < len(startIndexes) and len(startIndexes) > 1:
-        #grab startIndex at locations index and index+1 and slice the string at those indexes
-        t = textLine[startIndexes[index]:startIndexes[index+1]]
-        text.append(t)
-        index +=2
-    if len(startIndexes) > 0:
-        #slice the last line of text that wouldn't be added above
-        text.append(textLine[startIndexes[len(startIndexes)-1]:])
-    else:
-        #no matches, so this line is different, just append it
-        text.append(textLine)
-    text = [item.replace(config.NEWLINE_CHAR, "") for item in text]
+    for item in startIndexes:
+        index += 1
+        if index < len(startIndexes)-1:
+            #grab startIndex at locations index and index+1 and slice the string at those indexes
+            t = textLine[item:startIndexes[index+1]]
+            text.append(t)
+    text = [(item.replace(config.NEWLINE_CHAR, " ")).strip() for item in text]
     return config.NEWLINE_CHAR.join(text)
     
-def extractDataFromLine(line: str, indexes: Dict[str, int])->Dict[str, str]:
+def extractDataFromLine(line: str, indexes: Dict[str, int] | None)->Dict[str, str]:
     """
     Pass in a dict in the form {fieldName : indexWhenSplitByWhitespace}
     Extracts those indexes and returns dict in form {fieldName : textData}
+    If there is only one item (the entire line is the field), pass {fieldName : lineStarterToRemove}
     """
+    if len(indexes) == 1:
+        (fieldName, value) = indexes.popitem()
+        return {fieldName : line[value:].strip()}
     #first split the line on whitespace
     splitLine = re.split(config.WHITESPACE_PATTERN, line)
     #now go through the dict and extract the indexes that you need
@@ -112,9 +111,7 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
             continue
         result.append(dataLine.strip())
     del result[len(result)-1]
-    return result
-    
-    
+    return result    
     
 def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
     """
@@ -127,6 +124,27 @@ def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
         for card in cardData:
             writer.writerow(card)
     return
+    
+def makeCardFromData(data: str)->Card:
+    """
+    Take the string that's been stripped, extract the data, and return a Card
+    """
+    #first split the string on newline
+    splitData = data.split(config.NEWLINE_CHAR)
+    index = -1
+    resultData = {}
+    for line in config.CARD_LINES:
+        index += 1
+        lineInfo = extractDataFromLine(splitData[index], line)
+        resultData.update(lineInfo)
+    #check for the fields to convert to int
+    for key in config.FIELDS_TO_CONVERT_TO_INT:
+        if key in resultData.keys():
+            resultData[key] = int(resultData[key])
+    #now get the textline
+    textInfo = extractAndFormatTextField(data)
+    resultData["text"] = textInfo
+    return Card(resultData)
     
     
 

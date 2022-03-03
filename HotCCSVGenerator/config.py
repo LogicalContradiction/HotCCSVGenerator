@@ -18,5 +18,40 @@ CSV_WRITER_FIELDNAMES = ["name",
                          "traits",
                          "triggers",
                          "flavor",
-                         "text"]
+                         "text"
+                        ]
 CSV_DELIMITER = "\t"
+
+TRANSLATED_NAME = {"translatedName" : None}
+NAME = {"name" : None}
+CARD_NUM_RARITY = {"cardNum" : 2,
+                   "rarity" : 4
+                  }
+COLOR_SIDE_TYPE = {"color" : 1,
+                   "side" : 3,
+                   "type" : 4
+                  }
+LEVEL_COST_POWER_SOUL = {"level" : 1,
+                         "cost" : 3,
+                         "power" : 5,
+                         "soul" : 7
+                        }
+TRAITS = {"traits" : 8}
+TRIGGERS = {"triggers" : 10}
+FLAVOR = {"flavor" : 8}
+CARD_LINES = [TRANSLATED_NAME,
+              NAME,
+              CARD_NUM_RARITY,
+              COLOR_SIDE_TYPE,
+              LEVEL_COST_POWER_SOUL,
+              TRAITS,
+              TRIGGERS,
+              FLAVOR
+             ]
+FIELDS_TO_CONVERT_TO_INT = ["level",
+                            "cost",
+                            "power",
+                            "soul"
+                           ]
+
+

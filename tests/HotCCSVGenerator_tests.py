@@ -8,7 +8,7 @@ from hotCCSVGenerator import hotCCSVGenerator
 
 dataOne = {"name": "ボブ",
         "translatedName": "Bob",
-        "cardNum": "AA/Z00-069 ZZ",
+        "cardNum": "AA/Z00-069ZZ",
         "rarity": "ZZ",
         "color": "purple",
         "side": "Weiss",
@@ -25,7 +25,7 @@ dataOne = {"name": "ボブ",
         
 dataTwo = {"name": "成歩堂 龍",
         "translatedName": "Phoenix Wright",
-        "cardNum": "QQ/Z21-777 MM",
+        "cardNum": "QQ/Z21-777MM",
         "rarity": "MMM",
         "color": "Green",
         "side": "Weiss",
@@ -41,7 +41,7 @@ dataTwo = {"name": "成歩堂 龍",
         }
 TEST_DATA_ONE_NEWLINES_REMOVED = {"name": "ボブ",
                                   "translatedName": "Bob",
-                                  "cardNum": "AA/Z00-069 ZZ",
+                                  "cardNum": "AA/Z00-069ZZ",
                                   "rarity": "ZZ",
                                   "color": "purple",
                                   "side": "Weiss",
@@ -79,7 +79,7 @@ Level: 69   Cost: 70   Power: 9001   Soul: 1
 Traits: intelligence (int), luck (lck)
 Triggers: Draw
 Flavor: 
-TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, 
+TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M,
 QCF.L+M
 [X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"""
 
@@ -101,7 +101,7 @@ Level: 69   Cost: 70   Power: 9001   Soul: 1
 Traits: intelligence (int), luck (lck)
 Triggers: Draw
 Flavor: 
-TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, 
+TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M,
 QCF.L+M"""
 
 strippedDataStrNoText = """Phoenix Wright
@@ -174,10 +174,11 @@ class HotCCSVGeneratorTest(unittest.TestCase):
     
     def test_extractAndFormatTextField_MultipleTextLines(self):
         global strippedDataStr
-
+        
+        expectedResult = "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, QCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"
         result = hotCCSVGenerator.extractAndFormatTextField(strippedDataStr)
-        self.assertEqual(result, "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, QCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H",\
-        "Make sure you didn't change strippedDataStr.")
+
+        self.assertEqual(result, expectedResult, "Make sure you didn't change strippedDataStr.")
         
     def test_extractAndFormatTextField_OneTextLine(self):
         global strippedDataStrOneText
@@ -199,13 +200,14 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         self.assertEqual(result, "", "Make sure you didn't change strippedDataStrEmptyText.")
         
     def test_extractDataFromLine_TwoValues(self):
-        line = "Card No.: QQ/Z21-777MM  Rarity: MM"
+        global WEBPAGE_DATA_TWO
+        line = WEBPAGE_DATA_TWO.split("\n")[2]
         dictionary = {"cardNum": 2,
                       "rarity": 4}
         result = hotCCSVGenerator.extractDataFromLine(line, dictionary)
         
         self.assertEqual(result["cardNum"], "QQ/Z21-777MM")
-        self.assertEqual(result["rarity"], "MM")
+        self.assertEqual(result["rarity"], "MMM")
         
     def test_extractDataFromLine_FourIntValues(self):
         line = "Level: 69   Cost: 70   Power: 9001   Soul: 1"
@@ -219,6 +221,14 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         self.assertEqual(result["cost"], "70")
         self.assertEqual(result["power"], "9001")
         self.assertEqual(result["soul"], "1") 
+        
+    def test_extractDataFromLine_OneElement(self):
+        global WEBPAGE_DATA_TWO
+        line = WEBPAGE_DATA_TWO.split("\n")[0]
+        dictionary = {"name": None}
+        
+        result = hotCCSVGenerator.extractDataFromLine(line, dictionary)
+        self.assertEqual(result["name"], "Phoenix Wright")
 
     def test_getLinesFromSoup(self):
         TEST_FILE = Path(__file__).parent / "testData/testWebpage.html"
@@ -266,6 +276,21 @@ class HotCCSVGeneratorTest(unittest.TestCase):
             #assert if write cas called from the file opened with in the order and with the params of calls 
             mockedFile().write.assert_has_calls(calls)
             
+    def test_makeCardFromData(self):
+        global TEST_DATA_ONE_NEWLINES_REMOVED
+        global WEBPAGE_DATA_ONE
+        
+        resultStrFormat = "\nExpected {key}:\n{eValue}\nActual {key}:\n{aValue}\n"
+        
+        expectedCard = hotCCSVGenerator.Card(TEST_DATA_ONE_NEWLINES_REMOVED)
+        resultCard = hotCCSVGenerator.makeCardFromData(WEBPAGE_DATA_ONE)
+        resultStr = ""
+        for key in resultCard:
+            resultStr = resultStr + resultStrFormat.format(key=key, eValue=expectedCard[key], aValue=resultCard[key])
+        
+        self.assertEqual(expectedCard, resultCard, resultStr)
+        
+                       
     
 
 if __name__ == "__main__":
