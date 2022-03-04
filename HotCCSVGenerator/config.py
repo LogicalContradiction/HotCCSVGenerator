@@ -53,5 +53,16 @@ FIELDS_TO_CONVERT_TO_INT = ["level",
                             "power",
                             "soul"
                            ]
+                           
+URL_FORMAT_PATTERN = "https://www.heartofthecards.com/translations/{setNameAndType}.html"
+
+URL_REGEX_PATTERN_REPLACE_WITH_DASH = ":|,|'|&|\/|\(|\)"
+URL_REGEX_PATTERN_REPLACE_WITH_UNDERSCORE = " "
+URL_REGEX_PATTERN_REMOVE = "\?"
+
+URL_REGEX_REPLACE_CHARS = [(URL_REGEX_PATTERN_REPLACE_WITH_DASH, "-"),
+                           (URL_REGEX_PATTERN_REPLACE_WITH_UNDERSCORE, "_"),
+                           (URL_REGEX_PATTERN_REMOVE, "")
+                          ]
 
 

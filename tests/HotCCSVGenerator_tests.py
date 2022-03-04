@@ -290,8 +290,62 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
         self.assertEqual(expectedCard, resultCard, resultStr)
         
-                       
-    
-
+    def test_formatUrl_standardCase(self):
+        setName = "Da Capo 10th Anniversary Mix"
+        packType = "Trial Deck"
+        expectedUrl = "https://www.heartofthecards.com/translations/da_capo_10th_anniversary_mix_trial_deck.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+    def test_formatUrl_ColonAndApostPunctuation(self):
+        setName = "Bofuri: I Don't Want to Get Hurt, so I'll Max Out My Defense"
+        packType = "Booster Pack"
+        expectedUrl = "https://www.heartofthecards.com/translations/bofuri-_i_don-t_want_to_get_hurt-_so_i-ll_max_out_my_defense_booster_pack.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+    def test_formatUrl_AmpersandPunctuation(self):
+        setName = "Angel Beats! & Kud Wafter"
+        packType = "Trial Deck"
+        expectedUrl = "https://www.heartofthecards.com/translations/angel_beats!_-_kud_wafter_trial_deck.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+    def test_formatUrl_ForwardSlashPunctuation(self):
+        setName = "Da Capo / Da Capo II"
+        packType = "Booster Pack"
+        expectedUrl = "https://www.heartofthecards.com/translations/da_capo_-_da_capo_ii_booster_pack.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+    def test_formatUrl_QuestionMarkPunctuation(self):
+        setName = "Is It Wrong to Try to Pick Up Girls in a Dungeon?"
+        packType = "Booster Pack"
+        expectedUrl = "https://www.heartofthecards.com/translations/is_it_wrong_to_try_to_pick_up_girls_in_a_dungeon_booster_pack.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+    def test_formatUrl_ParenthesisPunctuation(self):
+        setName = "Hatsune Miku Project Diva F (Vocaloid) 2nd"
+        packType = "Booster Pack"
+        expectedUrl = "https://www.heartofthecards.com/translations/hatsune_miku_project_diva_f_-vocaloid-_2nd_booster_pack.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+    def test_formatUrl_DoubleQuestionmarkPunctuation(self):
+        setName = "Is the Order a Rabbit?? Dear My Sister"
+        packType = "Booster Pack"
+        expectedUrl = "https://www.heartofthecards.com/translations/is_the_order_a_rabbit_dear_my_sister_booster_pack.html"
+        
+        resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
+        self.assertEqual(expectedUrl, resultUrl)
+        
+        
 if __name__ == "__main__":
     unittest.main()

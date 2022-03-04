@@ -146,6 +146,36 @@ def makeCardFromData(data: str)->Card:
     resultData["text"] = textInfo
     return Card(resultData)
     
+def formatUrl(setName: str, packType:str)->str:
+    """
+    Takes the name of a set (typically a series) and the pack type (booster pack, trial deck, or one of the many
+    misc. sets) and returns a formatted url (replace spaces with underscores and cast entire string to lowercase)
+    """
+    #colon, comma, apostrophe, ampersand, forward slash, parenthesis become dash
+    #question mark is removed
+    #space replaced with underscore
+    #first, strip excess whitespace from the ends and cast to lowercase
+    setName = setName.strip().lower()
+    packType = packType.strip().lower()
+    #replace all the special characters we don't want
+    for tup in config.URL_REGEX_REPLACE_CHARS:
+        (pattern, replaceChar) = tup
+        setName = re.sub(pattern, replaceChar, setName)
+        packType = re.sub(pattern, replaceChar, packType)
+    #now join the two on an underscore
+    setNameAndPackType = setName + "_" + packType
+    #now return the formatted url
+    return config.URL_FORMAT_PATTERN.format(setNameAndType=setNameAndPackType)
+    
+def convertAPage(filepathOrUrl: str, fileOrUrlFlag: str)->list[Card]:
+    """
+    Convert a single page to cards
+    """
+    #first make the soup
+    pass
+    
+    
+    
     
 
 
