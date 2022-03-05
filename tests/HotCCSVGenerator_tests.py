@@ -54,7 +54,24 @@ TEST_DATA_ONE_NEWLINES_REMOVED = {"name": "ボブ",
                                   "triggers": "soul",
                                   "flavor": "flavor text goes here",
                                   "text": "[Z] When that thing happens, do the other thing.\n[A] According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. Ya like jazz?\n[Q] [(7) Discard everything] Do the other thing."
-                                 }  
+                                 } 
+TEST_DATA_TWO_NEWLINES_REMOVED = {"name": "成歩堂 龍",
+                                  "translatedName": "Phoenix Wright",
+                                  "cardNum": "QQ/Z21-777MM",
+                                  "rarity": "MMM",
+                                  "color": "Green",
+                                  "side": "Weiss",
+                                  "type": "Climax",
+                                  "level": 69,
+                                  "cost": 70,
+                                  "power": 9001,
+                                  "soul": 1,
+                                  "traits": "intelligence (int), luck (lck)",
+                                  "triggers": "Draw",
+                                  "flavor": "",
+                                  "text": "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M,QCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"
+                                 }
+                                 
 TEST_CSV_HEADERS = ["name", 
                          "translatedName", 
                          "cardNum",
@@ -139,7 +156,7 @@ Level: 69   Cost: 70   Power: 9001   Soul: 1
 Traits: intelligence (int), luck (lck)
 Triggers: Draw
 Flavor: 
-TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, 
+TEXT: [D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M,
 QCF.L+M
 [X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"""
 
@@ -277,6 +294,7 @@ class HotCCSVGeneratorTest(unittest.TestCase):
             mockedFile().write.assert_has_calls(calls)
             
     def test_makeCardFromData(self):
+        self.maxDiff = None
         global TEST_DATA_ONE_NEWLINES_REMOVED
         global WEBPAGE_DATA_ONE
         
@@ -345,6 +363,52 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
         resultUrl = hotCCSVGenerator.formatUrl(setName, packType)
         self.assertEqual(expectedUrl, resultUrl)
+
+            
+    def test_convertAPageToCards(self):
+        self.masDiff = None
+        testDataOne = {"name": "ボブ",
+                                  "translatedName": "Bob",
+                                  "cardNum": "AA/Z00-069ZZ",
+                                  "rarity": "ZZ",
+                                  "color": "purple",
+                                  "side": "Weiss",
+                                  "type": "Character",
+                                  "level": 42,
+                                  "cost": 500,
+                                  "power": 0,
+                                  "soul": 22,
+                                  "traits": "magic (mag), wisdom (wis)",
+                                  "triggers": "soul",
+                                  "flavor": "flavor text goes here",
+                                  "text": "[Z] When that thing happens, do the other thing.\n[A] According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. Ya like jazz?\n[Q] [(7) Discard everything] Do the other thing."
+                                 } 
+        testDataTwo = {"name": "成歩堂 龍",
+                                  "translatedName": "Phoenix Wright",
+                                  "cardNum": "QQ/Z21-777MM",
+                                  "rarity": "MMM",
+                                  "color": "Green",
+                                  "side": "Weiss",
+                                  "type": "Climax",
+                                  "level": 69,
+                                  "cost": 70,
+                                  "power": 9001,
+                                  "soul": 1,
+                                  "traits": "intelligence (int), luck (lck)",
+                                  "triggers": "Draw",
+                                  "flavor": "",
+                                  "text": "[D] COMBO [TOD] j.H., (s.S, j.M, j.H, vH)x2, DP.H, cr.H, ->H, QCB.M, QCF.L+M\n[X] 632146S, 5P, 5K, 5S, 5H, 5D, 5K, 5S, 632146H"
+                                 }
+        filepath = Path(__file__).parent /"testData/testWebpage.html"
+        
+        card1 = hotCCSVGenerator.Card(testDataOne)
+        card2 = hotCCSVGenerator.Card(testDataTwo)
+        expectedResult = [card1,card2]
+        
+        #for key in card1:
+        #    print("\nkey:",key,"\neValue:",card1[key])
+        actualResult = hotCCSVGenerator.convertAPageToCards(filepath)  
+        self.assertEqual(expectedResult, actualResult)
         
         
 if __name__ == "__main__":

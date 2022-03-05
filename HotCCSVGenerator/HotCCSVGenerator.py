@@ -85,15 +85,15 @@ def extractDataFromLine(line: str, indexes: Dict[str, int] | None)->Dict[str, st
     If there is only one item (the entire line is the field), pass {fieldName : lineStarterToRemove}
     """
     if len(indexes) == 1:
-        (fieldName, value) = indexes.popitem()
+        fieldName = next(iter(indexes))
+        value = indexes[fieldName]
         return {fieldName : line[value:].strip()}
     #first split the line on whitespace
     splitLine = re.split(config.WHITESPACE_PATTERN, line)
     #now go through the dict and extract the indexes that you need
     result = {}
     for key in indexes:
-        result[key] = splitLine[indexes[key]]
-        
+        result[key] = splitLine[indexes[key]]   
     return result
 
 def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
@@ -167,12 +167,22 @@ def formatUrl(setName: str, packType:str)->str:
     #now return the formatted url
     return config.URL_FORMAT_PATTERN.format(setNameAndType=setNameAndPackType)
     
-def convertAPage(filepathOrUrl: str, fileOrUrlFlag: str)->list[Card]:
+def convertAPageToCards(filepathOrUrl: str)->list[Card]:
     """
-    Convert a single page to cards
+    Convert a single page to Cards and return a list of cards
     """
-    #first make the soup
-    pass
+    #Decide if it's a url or filepath. Make soup based on that
+    if re.match(config.URL_VALIDATION_PATTERN, str(filepathOrUrl)):
+        soup = makeSoupFromWebpage(filepathOrUrl)
+    else:
+        soup = makeSoupFromFile(filepathOrUrl)
+    #now extract the data to be turned into cards
+    cardData = getLinesFromSoup(soup)
+    #now turn all the cardDatas into cards
+    cards = []
+    for dataGroup in cardData:
+        cards.append(makeCardFromData(dataGroup))
+    return cards
     
     
     
