@@ -410,6 +410,36 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         actualResult = hotCCSVGenerator.convertAPageToCards(filepath)  
         self.assertEqual(expectedResult, actualResult)
         
+    def test_proccessCommandLineArgs_version(self):
+        args = ["--version"]
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.proccessCommandLineArgs(args)
+    
+    def test_processCommandLineArgs_url(self):
+        args = ["url", "www.example.com"]
+        expectedResult = {"mode": "url",
+                          "url": "www.example.com"
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_processCommandLineArgs_filepath(self):
+        args = ["filepath", "this/is/a/filepath.txt"]
+        expectedResult = {"mode": "filepath",
+                          "filepath": "this/is/a/filepath.txt"
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_processCommandLineArgs_setNamePackType(self):
+        args = ["name", "Symphogear XV", "booster pack"]
+        expectedResult = {"mode": "name",
+                          "setName": "Symphogear XV",
+                          "packType": "booster pack"
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
         
 if __name__ == "__main__":
     unittest.main()
