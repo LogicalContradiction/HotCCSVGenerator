@@ -440,6 +440,34 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
         
+    def test_formatCommandLineArgs_NoQuotes(self):
+        args = ["a", "cute", "owl", "eating", "berries", "with", "a", "clock"]
+        expectedResult = args
+        
+        actualResult = hotCCSVGenerator.formatCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_formatCommandLineArgs_OneQuotedGroup(self):
+        args = ["a", "\"cute", "owl", "eating", "berries\"", "with", "a", "clock"]
+        expectedResult = ["a", "cute owl eating berries", "with", "a", "clock"]
+        
+        actualResult = hotCCSVGenerator.formatCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_formatCommandLineArgs_TwoQuotedGroup(self):
+        args = ["a", "\"cute", "owl\"", "\"eating", "berries\"", "with", "a", "clock"]
+        expectedResult = ["a", "cute owl", "eating berries", "with", "a", "clock"]
+        
+        actualResult = hotCCSVGenerator.formatCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_formatCommandLineArgs_SingleQuote(self):
+        args = ["a", "\"cute", "owl", "eating", "berries", "with", "a", "clock"]
+        expectedResult = args
+        
+        actualResult = hotCCSVGenerator.formatCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
         
 if __name__ == "__main__":
     unittest.main()

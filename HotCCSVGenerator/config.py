@@ -1,3 +1,4 @@
+VERSION_NUM = "0.5"
 PATTERN = r"=+"
 FILE_ENCODING= "utf8"
 TEXTLINE_STARTER = "TEXT: "
@@ -65,5 +66,9 @@ URL_REGEX_REPLACE_CHARS = [(URL_REGEX_PATTERN_REPLACE_WITH_DASH, "-"),
                            (URL_REGEX_PATTERN_REPLACE_WITH_UNDERSCORE, "_"),
                            (URL_REGEX_PATTERN_REMOVE, "")
                           ]
+                          
+RUN_MODE_FILEPATH = "filepath"
+RUN_MODE_URL = "url"
+RUN_MODE_SET_AND_PACK = "name"
 
 

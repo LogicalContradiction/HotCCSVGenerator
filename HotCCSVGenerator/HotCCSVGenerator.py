@@ -1,10 +1,13 @@
 from . import config
+from . import textData
 from bs4 import BeautifulSoup
 import re
 import requests
 from typing import TypedDict, Dict
 from pathlib import Path
 import csv
+import argparse
+import sys
 
 class Card(TypedDict):
     name: str
@@ -184,10 +187,91 @@ def convertAPageToCards(filepathOrUrl: str)->list[Card]:
         cards.append(makeCardFromData(dataGroup))
     return cards
     
-    
-    
-    
+def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
+    """
+    Process the command line flags and return a data structure dictating how the program should run.
+    Call formatCommandLineArgs first to stitch together quoted variables
+    Make sure the script name is not present. 
+    """
+    #make the main parser
+    parser = argparse.ArgumentParser(description=textData.PROG_DESCRIPTION_FOR_PARSER_TEXT)
+    #crate subparsers to handle the subtype of what mode to run in
+    subparsers = parser.add_subparsers(help=textData.SUBPARSER_HELP_TEXT)
+    #url mode parser
+    parserUrl = subparsers.add_parser("url", help=textData.SUBPARSER_URL_HELP_TEXT)
+    parserUrl.add_argument("url", help=textData.SUBPARSER_URL_ARGUMENT_HELP_TEXT, metavar="URL")
+    #filepath mode parser
+    parserFileName = subparsers.add_parser("filepath", help=textData.SUBPARSER_FILEPATH_HELP_TEXT)
+    parserFileName.add_argument("filepath", help=textData.SUBPARSER_FILEPATH_ARGUMENT_HELP_TEXT, metavar="FILEPATH")
+    #set name and pack type parser
+    parserSetPack = subparsers.add_parser("name", help=textData.SUBPARSER_PACK_HELP_TEXT)
+    parserSetPack.add_argument("setName", help=textData.SUBPARSER_PACK_ARGUMENT_ONE_HELP_TEXT, metavar="SET_NAME")
+    parserSetPack.add_argument("packType", help=textData.SUBPARSER_PACK_ARGUMENT_TWO_HELP_TEXT, metavar="PACK_TYPE")
 
-
+    #main parser arguments - apply to before they subtype
+    parser.add_argument("--version", help=textData.PARSER_VERSION_HELP_TEXT, action="store_true")
+    
+    #parse the args. can also pass a list as an argument to parse that
+    args = parser.parse_args(arguments)
+    #check if the arg passed was for version
+    if args.version:
+        print(config.VERSION_NUM)
+        exit(0)
+    #create the structure to dictate how the program runs
+    runInfo = {"mode": None}
+    #figure out which subprocessor was found:
+    if "filepath" in args:
+        runInfo["mode"] = config.RUN_MODE_FILEPATH
+        runInfo["filepath"] = args.filepath
+    if "url" in args:
+        runInfo["mode"] = config.RUN_MODE_URL
+        runInfo["url"] = args.url
+    if "setName" and "packType" in args:
+        runInfo["mode"] = config.RUN_MODE_SET_AND_PACK
+        runInfo["setName"] = args.setName
+        runInfo["packType"] = args.packType
+    return runInfo
+    
+def formatCommandLineArgs(args: list[str])->list[str]:
+    """
+    Used to connect strings that are within quotes that parsing the command line broke up.
+    Make sure to call with sys.args[1:]
+    """
+    index = 0
+    result = []
+    while index < len(args):
+        #chech if first character is "
+        if args[index][0] == "\"":
+            #we need to try to these arguments together
+            quoteStartIndex = index
+            quoteEndIndex = index
+            #now try to find an argument that ends with "
+            foundEndQuote = False
+            while quoteEndIndex < len(args):
+                #check the last character for "
+                item = args[quoteEndIndex]
+                if item[len(item)-1] == "\"":
+                    #first join the arguments to get the full string
+                    joinedStr = " ".join(args[quoteStartIndex:quoteEndIndex+1])
+                    #now remove the quotation marks since they aren't needed
+                    joinedStr = joinedStr.replace("\"", "")
+                    result.append(joinedStr)
+                    index = quoteEndIndex+1
+                    foundEndQuote = True
+                    break
+                else:
+                    quoteEndIndex += 1
+            if not foundEndQuote:
+                #case of reaching end of arguments list and not finding a closing quote
+                #add the rest of the items to result
+                for argument in args[quoteStartIndex:]:
+                    result.append(argument)
+                index = quoteEndIndex
+        else:
+            result.append(args[index])
+            index += 1
+    return result    
+    
+    
 if __name__ == "__main__":
     pass 
