@@ -18,3 +18,7 @@ PARSER_ABORT_ON_ERROR_HELP_TEXT = "Abort converting any more pages if an error o
 PARSER_BATCH_FILE_HELP_TEXT = "File containing HotC urls, .html files, or set name and pack type separated by a tab character, with only one of these per line. Following each of these arguments should be another tab character, which is then followed by the output filename. If no filename is specified, the default is used. Lines starting with '#' are treated as comments and ignored."
 PARSER_DRY_RUN_HELP_TEXT = "Simulate running and print what will happen given the set of inputs."
 
+FILEPATH_NOT_FOUND_ERROR_MSG = "The specified file could not be found, please double check the spelling and try again.\nFile specified: {filename}"
+CONNECTIONERROR_ERROR_MSG = "A connection error occured. Please double check that the url is correct and try again.\nurl provided: {url}"
+HTTPERROR_ERROR_MSG = "HTTP error occured. Please take the reccomended action and try again.\nHTTP status code: {statusCode}\nReason: {reason}"
+WRITE_OSERROR_ERROR_MSG = "An error occured while writing. Please try again.\nFilename: {filename}\nError msg: {errormsg}"

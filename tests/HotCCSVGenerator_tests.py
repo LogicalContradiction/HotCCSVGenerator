@@ -255,9 +255,9 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         with open(TEST_FILE, "r", encoding=FILE_ENCODING) as file:
             soup = BeautifulSoup(file, "html.parser")
         data = hotCCSVGenerator.getLinesFromSoup(soup)
-        self.assertEqual(len(data), 2)
-        self.assertEqual(data[0], WEBPAGE_DATA_ONE)
-        self.assertEqual(data[1], WEBPAGE_DATA_TWO)
+        self.assertEqual(len(data), 3)
+        self.assertEqual(data[1], WEBPAGE_DATA_ONE)
+        self.assertEqual(data[2], WEBPAGE_DATA_TWO)
         
     def test_writeCardsToCSVFile(self):
         TEST_FILE = Path(__file__).parent /"testData/testCSVFile.csv"
@@ -404,11 +404,13 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         card1 = hotCCSVGenerator.Card(testDataOne)
         card2 = hotCCSVGenerator.Card(testDataTwo)
         expectedResult = [card1,card2]
+        expectedFilename = "Fake_Deck_Translation"
         
         #for key in card1:
         #    print("\nkey:",key,"\neValue:",card1[key])
-        actualResult = hotCCSVGenerator.convertAPageToCards(filepath)  
+        actualResult, actualFilename = hotCCSVGenerator.convertAPageToCards(filepath)  
         self.assertEqual(expectedResult, actualResult)
+        self.assertEqual(expectedFilename,actualFilename)
         
     def test_proccessCommandLineArgs_version(self):
         args = ["--version"]
@@ -418,7 +420,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
     def test_processCommandLineArgs_url(self):
         args = ["url", "www.example.com"]
         expectedResult = {"mode": "url",
-                          "url": "www.example.com"
+                          "url": "www.example.com",
+                          "outputFilepath": None
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -426,7 +429,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
     def test_processCommandLineArgs_filepath(self):
         args = ["filepath", "this/is/a/filepath.txt"]
         expectedResult = {"mode": "filepath",
-                          "filepath": "this/is/a/filepath.txt"
+                          "filepath": "this/is/a/filepath.txt",
+                          "outputFilepath": None
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -435,7 +439,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         args = ["name", "Symphogear XV", "booster pack"]
         expectedResult = {"mode": "name",
                           "setName": "Symphogear XV",
-                          "packType": "booster pack"
+                          "packType": "booster pack",
+                          "outputFilepath": None
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -467,6 +472,38 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
         actualResult = hotCCSVGenerator.formatCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
+        
+    def test_extractPossibleFilename(self):
+        dataline = "Packname goes here Trial Deck Translation\nThis is an extra line\nso is this"
+        expectedResult = "Packname_goes_here_Trial_Deck_Translation"
+        
+        actualResult = hotCCSVGenerator.extractPossibleFilename(dataline)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_extractPossibleFilename_illegalChars(self):
+        dataline = "P@ckna<me g\"oes here/ Trial D>eck\ Tr|ans:lati?on\nThis is an extra line\nso is this"
+        expectedResult = "Packna_me_g_oes_here__Trial_D_eck__Tr_ans_lati_on"
+        
+        actualResult = hotCCSVGenerator.extractPossibleFilename(dataline)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_run_Filepath(self):
+        args = ["filepath", "tests/testData/testWebpage.html"]
+        correctCSVDataFilepath= "tests/testData/Expected_Fake_Deck_Translation.csv"
+        expectedCSVFilepath = "output/Fake_Deck_Translation.csv"
+        
+        with open(correctCSVDataFilepath, "r", encoding=FILE_ENCODING) as file:
+            expectedResult = file.readlines()
+        
+        hotCCSVGenerator.run(args)
+        
+        self.assertTrue(Path(expectedCSVFilepath).exists())
+        
+        with open(expectedCSVFilepath, "r", encoding=FILE_ENCODING) as file:
+            actualResult = file.readlines() 
+        self.assertEqual(expectedResult, actualResult)
+        
+        #expectedFilename = Path("output\Fake_Deck_Translation.csv")
         
         
 if __name__ == "__main__":

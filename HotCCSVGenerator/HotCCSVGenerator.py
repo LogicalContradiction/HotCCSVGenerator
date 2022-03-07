@@ -54,6 +54,7 @@ def makeSoupFromFile(filepath: str):
     
 def makeSoupFromWebpage(url: str):
     req = requests.get(url)
+    req.raise_for_status()
     return BeautifulSoup(req.text, "html.parser")
     
 def extractAndFormatTextField(data: str)->str:
@@ -105,16 +106,11 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
     """
     text = soup.pre.text
     lines = re.split(config.PATTERN, text)
-    skip = True
     result = []
     for dataLine in lines:
-        if skip:
-            #the first line is a dataline, ignore it
-            skip = not skip
-            continue
         result.append(dataLine.strip())
     del result[len(result)-1]
-    return result    
+    return result     
     
 def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
     """
@@ -183,9 +179,24 @@ def convertAPageToCards(filepathOrUrl: str)->list[Card]:
     cardData = getLinesFromSoup(soup)
     #now turn all the cardDatas into cards
     cards = []
-    for dataGroup in cardData:
+    for dataGroup in cardData[1:]:
         cards.append(makeCardFromData(dataGroup))
-    return cards
+    #now get the possible filename
+    filename = extractPossibleFilename(cardData[0])
+    return cards, filename
+    
+def extractPossibleFilename(dataLine: str)->str:
+    """
+    Extract the possible filename from the data
+    """
+    #first, split the lines
+    lines = dataLine.split("\n")
+    nameLine = lines[0].strip()
+    #now remove illegal characters
+    for item in config.FILENAME_REPLACE_CHARS:
+        pattern, replaceChar = item
+        nameLine = re.sub(pattern, replaceChar, nameLine)
+    return nameLine
     
 def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     """
@@ -218,7 +229,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
         print(config.VERSION_NUM)
         exit(0)
     #create the structure to dictate how the program runs
-    runInfo = {"mode": None}
+    runInfo = {"mode": None, "outputFilepath": None}
     #figure out which subprocessor was found:
     if "filepath" in args:
         runInfo["mode"] = config.RUN_MODE_FILEPATH
@@ -270,7 +281,69 @@ def formatCommandLineArgs(args: list[str])->list[str]:
         else:
             result.append(args[index])
             index += 1
-    return result    
+    return result
+
+def run(arguments: list[str])->None:
+    """
+    The main method that drives the entire program.
+    """
+    #first, get the command line args (don't need arg0 since it's script name
+    if arguments == None:
+        args = sys.args[1:]
+    else:
+        args = arguments
+    #format the arguments
+    args = formatCommandLineArgs(args)
+    #now get the dict to determine how the program should run
+    runInfo = proccessCommandLineArgs(args)
+    #check if it's in setname mode
+    if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
+        #set name and pack type, so format the url
+        urlOrFilename = formatUrl(runInfo["setName"], runInfo["packType"])
+        #set the output filepath
+        if runInfo["outputFilepath"] == None:
+            possibleFilename = extractPossibleFilename(runInfo["setName"] + " " + runInfo["packType"])
+            defaultOutputDirectory = Path(__file__).parent.parent / config.DEFAULT_FILEPATH
+            defaultOutputDirectory.mkdir(exist_ok=True)
+            runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(filename=possibleFilename)
+    elif runInfo["mode"] == config.RUN_MODE_URL:
+        #url case, so just extract it
+        urlOrFilename = runInfo["url"]
+    else:
+        #filepath given, so validate it and then extract items
+        if Path(runInfo["filepath"]).exists():
+            urlOrFilename = runInfo["filepath"]
+        else:
+            #file doesn't exist, so output error
+            print(textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
+            exit(1)
+    #now we have a url or filepath that is valid. Extract the data
+    try:
+        cards, resultFilename = convertAPageToCards(urlOrFilename)
+    except requests.ConnectionError as exc:
+        #invalid url
+        print(textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
+        exit(1)
+    except requests.HTTPError as exc:
+        #some kind of http error
+        print(textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
+        exit(1)
+    #check if we don't already have an output filepath
+    if runInfo["outputFilepath"] == None:
+        #don't have one. So compute it
+        defaultOutputDirectory = Path(__file__).parent.parent / config.DEFAULT_FILEPATH
+        defaultOutputDirectory.mkdir(exist_ok=True)
+        runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(fliename=resultFilename)
+    #we have the data and an output file, so write it.
+    try:
+        writeCardsToCSVFile(runInfo["outputFilepath"], cards)
+    except OSError as exc:
+        print(textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
+        exit(1)
+    return
+    
+    
+        
     
     
 if __name__ == "__main__":

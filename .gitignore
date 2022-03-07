@@ -159,3 +159,5 @@ webpages/
 .env
 #testoutput
 tests/testData/testCSVFile.csv
+
+output/
