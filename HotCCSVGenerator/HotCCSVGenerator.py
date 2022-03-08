@@ -289,7 +289,7 @@ def run(arguments: list[str])->None:
     """
     #first, get the command line args (don't need arg0 since it's script name
     if arguments == None:
-        args = sys.args[1:]
+        args = sys.argv[1:]
     else:
         args = arguments
     #format the arguments
@@ -342,9 +342,9 @@ def run(arguments: list[str])->None:
         exit(1)
     return
     
-    
+#@TODO: MORE TESTS WITH OTHER MODES    
         
     
     
 if __name__ == "__main__":
-    pass 
+    run(None) 

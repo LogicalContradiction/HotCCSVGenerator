@@ -1,5 +1,5 @@
-VERSION_NUM = "0.5"
-PATTERN = r"=+"
+VERSION_NUM = "version 0.8"
+PATTERN = r"==+"
 FILE_ENCODING= "utf8"
 TEXTLINE_STARTER = "TEXT: "
 TEXTLINE_PATTERN = "\[.]"
@@ -72,7 +72,7 @@ RUN_MODE_URL = "url"
 RUN_MODE_SET_AND_PACK = "name"
 
 DEFAULT_FILEPATH = "output"
-DEFAULT_FILENAME = "{fliename}.csv"
+DEFAULT_FILENAME = "{filename}.csv"
 
 OUTPUT_FILENAME_REPLACE_WITH_A = "@"
 OUTPUT_FILENAME_REPLACE_WITH_UNDERSCORE = r"[/<>:\"\\|?* ]"
