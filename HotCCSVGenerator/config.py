@@ -55,7 +55,7 @@ FIELDS_TO_CONVERT_TO_INT = ["level",
                             "soul"
                            ]
 
-URL_VALIDATION_PATTERN = "^((http|https):\/\/)?(www.)?heartofthecards(.com)"                       
+URL_VALIDATION_PATTERN = "^((http|https):\/\/)?(www.)?heartofthecards(.com)\/translations\/"                       
 URL_FORMAT_PATTERN = "https://www.heartofthecards.com/translations/{setNameAndType}.html"
 
 URL_REGEX_PATTERN_REPLACE_WITH_DASH = ":|,|'|&|\/|\(|\)"

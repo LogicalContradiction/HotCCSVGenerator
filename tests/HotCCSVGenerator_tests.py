@@ -533,6 +533,18 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
         with self.assertRaises(SystemExit):
             hotCCSVGenerator.run(args)
+            
+    def test_run_url_HotC_not_valid(self):
+        args = ["url", "https://www.heartofthecards.com/translations/bob"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
+            
+    def test_run_url_not_translation(self):
+        args = ["url", "https://www.heartofthecards.com/rfy/translations/"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
         
         
         

@@ -24,5 +24,6 @@ HTTPERROR_ERROR_MSG = "HTTP error occured. Please take the reccomended action an
 WRITE_OSERROR_ERROR_MSG = "An error occured while writing. Please try again.\nFilename: {filename}\nError msg: {errormsg}"
 NOT_A_HOTC_URL_ERROR_MSG = "The provided url was not a valid HotC url. Please double check it and try again."
 SET_NAME_PACK_TYPE_NOT_FOUND = "There was an issue getting the data from the webpage. This was likely caused by an issue with either the set name or pack type. Please double check these and try again.\nSet name: {setname}\nPack type: {packtype}\nGenerated url: {url}"
+URL_NOT_VALID = "The url provided was not a valid link to a HotC translation page. Please double check it and try again.\nurl: {url}"
 
 WEB_SCRAPE_EXCEPTION_MSG = "Error when scraping url.\nurl: {url}"

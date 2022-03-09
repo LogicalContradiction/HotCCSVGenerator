@@ -339,7 +339,12 @@ def run(arguments: list[str])->None:
         cards, resultFilename = convertAPageToCards(urlOrFilename)
     except WebScrapeException as exc:
         #pack and data info wasn't found
-        print(textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+        if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
+            print(textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+        elif runInfo["mode"] == config.RUN_MODE_URL:
+            print(textData.URL_NOT_VALID.format(url=exc.url))
+        else:
+            print(str(exc))
         exit(1)
     except requests.ConnectionError as exc:
         #invalid url
