@@ -1,4 +1,4 @@
-VERSION_NUM = "version 0.8"
+VERSION_NUM = "notCCSVGenerator version 1.0"
 PATTERN = r"==+"
 FILE_ENCODING= "utf8"
 TEXTLINE_STARTER = "TEXT: "

@@ -231,7 +231,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     parserSetPack.add_argument("setName", help=textData.SUBPARSER_PACK_ARGUMENT_ONE_HELP_TEXT, metavar="SET_NAME")
     parserSetPack.add_argument("packType", help=textData.SUBPARSER_PACK_ARGUMENT_TWO_HELP_TEXT, metavar="PACK_TYPE")
 
-    #main parser arguments - apply to before they subtype
+    #main parser arguments - apply to before the subtype
     parser.add_argument("--version", help=textData.PARSER_VERSION_HELP_TEXT, action="store_true")
     
     #parse the args. can also pass a list as an argument to parse that
