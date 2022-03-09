@@ -81,3 +81,5 @@ OUTPUT_FILENAME_REPLACE_SPACE = " "
 FILENAME_REPLACE_CHARS = [(OUTPUT_FILENAME_REPLACE_WITH_A, "a"),
                           (OUTPUT_FILENAME_REPLACE_WITH_UNDERSCORE, "_")
                          ]
+                         
+HOTC_NOT_FOUND_TITLE_FRAGMENT = "404"

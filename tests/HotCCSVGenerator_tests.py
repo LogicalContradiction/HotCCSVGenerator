@@ -3,6 +3,7 @@ from unittest.mock import mock_open, patch, call
 from pathlib import Path
 from bs4 import BeautifulSoup
 import builtins
+import requests
 
 from hotCCSVGenerator import hotCCSVGenerator
 
@@ -503,7 +504,36 @@ class HotCCSVGeneratorTest(unittest.TestCase):
             actualResult = file.readlines() 
         self.assertEqual(expectedResult, actualResult)
         
-        #expectedFilename = Path("output\Fake_Deck_Translation.csv")
+    def test_run_Filepath_gibberish(self):
+        args = ["filepath", "adfas;ldkfa;jsdlkfajs;dflkas"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
+            
+    def test_run_Filepath_nonexistant_file(self):
+        args = ["filepath", "this/is/not/valid"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
+            
+    def test_run_Url_gibberish(self):
+        args = ["url", "ksadfasdfasdflkjl"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
+                
+    def test_run_Url_Non_HotC_url(self):
+        args = ["url", "www.youtube.com"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
+            
+    def test_run_Name_not_valid(self):
+        args = ["name", "mother nature", "the embodiment of chaos"]
+        
+        with self.assertRaises(SystemExit):
+            hotCCSVGenerator.run(args)
+        
         
         
 if __name__ == "__main__":

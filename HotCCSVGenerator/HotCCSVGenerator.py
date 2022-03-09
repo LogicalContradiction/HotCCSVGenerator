@@ -45,6 +45,14 @@ class Card(TypedDict):
             and self.text == other.text
         return False
         
+class WebScrapeException(Exception):
+
+    def __init__(self, url):
+        self.url = url
+        
+    def __str__(self):
+        return textData.WEB_SCRAPE_EXCEPTION_MSG.format(url=self.url)
+        
 
       
 def makeSoupFromFile(filepath: str):
@@ -55,7 +63,11 @@ def makeSoupFromFile(filepath: str):
 def makeSoupFromWebpage(url: str):
     req = requests.get(url)
     req.raise_for_status()
-    return BeautifulSoup(req.text, "html.parser")
+    soup = BeautifulSoup(req.text, "html.parser")
+    #check to see if the page wasn't found
+    if config.HOTC_NOT_FOUND_TITLE_FRAGMENT in soup.head.title.text:
+        raise WebScrapeException(url)
+    return soup
     
 def extractAndFormatTextField(data: str)->str:
     """
@@ -309,6 +321,11 @@ def run(arguments: list[str])->None:
     elif runInfo["mode"] == config.RUN_MODE_URL:
         #url case, so just extract it
         urlOrFilename = runInfo["url"]
+        #validate it's a HotC url
+        if not re.match(config.URL_VALIDATION_PATTERN, urlOrFilename):
+            #not a HotC url, so exit
+            print(textData.NOT_A_HOTC_URL_ERROR_MSG)
+            exit(1)
     else:
         #filepath given, so validate it and then extract items
         if Path(runInfo["filepath"]).exists():
@@ -320,6 +337,10 @@ def run(arguments: list[str])->None:
     #now we have a url or filepath that is valid. Extract the data
     try:
         cards, resultFilename = convertAPageToCards(urlOrFilename)
+    except WebScrapeException as exc:
+        #pack and data info wasn't found
+        print(textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+        exit(1)
     except requests.ConnectionError as exc:
         #invalid url
         print(textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
@@ -333,7 +354,7 @@ def run(arguments: list[str])->None:
         #don't have one. So compute it
         defaultOutputDirectory = Path(__file__).parent.parent / config.DEFAULT_FILEPATH
         defaultOutputDirectory.mkdir(exist_ok=True)
-        runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(fliename=resultFilename)
+        runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(filename=resultFilename)
     #we have the data and an output file, so write it.
     try:
         writeCardsToCSVFile(runInfo["outputFilepath"], cards)
