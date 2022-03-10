@@ -2,13 +2,13 @@
 * [Description](#description)
 * [Modes](#modes)
   * [url](#url)
-  * [fielpath](#filepath)
+  * [filepath](#filepath)
   * [set name and pack type](#set-name-and-pack-type)
 * [Options](#options)
 * [Disclaimer](#disclaimer)
 
 # DESCRIPTION
-HotCCSVGenerator is a command-line program to convert the translated Weiß Schwarz card data from HeartoftheCards.com (HotC) into a .csv file. It requires the Python interpreter, the `requests` library, and `beautifulsoup4`\.  
+HotCCSVGenerator is a command-line program to convert the translated Weiß Schwarz card data from HeartoftheCards.com (HotC) into a tab-separated .csv file. It requires the Python interpreter, the `requests` library, and `beautifulsoup4`\.  
 **Note:** Although it was developed on Python v3.10.1, it will likely work with version 3.8 or greater, due to the use of TypedDict.
 
 ```
@@ -36,7 +36,7 @@ If you have previously downloaded the card data page from HotC, you can run the 
 ```
 hotCCSVGenerator [OPTIONS] name SETNAME PACKTYPE
 ```
-You can simply specify the name of the set and what type of pack you want, and the tool will generate the url automatically and fetch the data for you. If either arugment contains spaces, remember to surround it with quotation marks.
+You can simply specify the name of the set and what type of pack you want, and the tool will generate the url automatically and fetch the data for you. If either argument contains spaces, remember to surround it with quotation marks.
 
 # OPTIONS
 ```
