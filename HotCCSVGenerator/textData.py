@@ -27,3 +27,16 @@ SET_NAME_PACK_TYPE_NOT_FOUND = "There was an issue getting the data from the web
 URL_NOT_VALID = "The url provided was not a valid link to a HotC translation page. Please double check it and try again.\nurl: {url}"
 
 WEB_SCRAPE_EXCEPTION_MSG = "Error when scraping url.\nurl: {url}"
+
+RUN_INFO_PROGRAM_START_MSG = "\nBeginning program.\n"
+RUN_INFO_INFO_PROVIDED = "Provided info:"
+RUN_INFO_SETNAME_PACKTYPE_PROVIDED = "Set name: {setname}\nPack type: {packtype}\n"
+RUN_INFO_FILENAME_PROVIDED = "Filename: {filename}\n"
+RUN_INFO_URL_PROVIDED = "Url: {url}\n"
+RUN_INFO_WEBPAGE = "Contacting webpage: {url}"
+RUN_INFO_READING_HTML_FILE = "Reading file."
+RUN_INFO_COMPLETE = "Complete\n"
+RUN_INFO_BEGIN_SCRAPING = "Begin scraping data."
+RUN_INFO_BEGIN_WRITING_TO_FILE = "Writing data to file.\nFilename: {filename}"
+RUN_INFO_WAIT_TO_START_NEXT_CALL = "Waiting {num} seconds before next run.\n"
+RUN_INFO_PROGRAM_COMPLETE = "Program has completed running. All files successfully written."

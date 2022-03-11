@@ -57,17 +57,21 @@ class WebScrapeException(Exception):
 
       
 def makeSoupFromFile(filepath: str):
+    doLogging(None, textData.RUN_INFO_READING_HTML_FILE)
     with open(filepath, "r", encoding=config.FILE_ENCODING) as file:
         soup = BeautifulSoup(file, "html.parser")
+    doLogging(None, textData.RUN_INFO_COMPLETE)
     return soup
     
 def makeSoupFromWebpage(url: str):
+    doLogging(None, textData.RUN_INFO_WEBPAGE.format(url=url))
     req = requests.get(url)
     req.raise_for_status()
     soup = BeautifulSoup(req.text, "html.parser")
     #check to see if the page wasn't found
     if config.HOTC_NOT_FOUND_TITLE_FRAGMENT in soup.head.title.text:
         raise WebScrapeException(url)
+    doLogging(None, textData.RUN_INFO_COMPLETE)
     return soup
     
 def extractAndFormatTextField(data: str)->str:
@@ -117,24 +121,28 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
     """
     Extract the lines of data from Soup to turn into cards
     """
+    doLogging(None, textData.RUN_INFO_BEGIN_SCRAPING)
     text = soup.pre.text
     lines = re.split(config.PATTERN, text)
     result = []
     for dataLine in lines:
         result.append(dataLine.strip())
     del result[len(result)-1]
+    doLogging(None, textData.RUN_INFO_COMPLETE)
     return result     
     
 def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
     """
     Open a file and write a list of Cards to items
     """
+    doLogging(None, textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
     #open the file
     with open(filepath, "w", encoding=config.FILE_ENCODING, newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=config.CSV_WRITER_FIELDNAMES, delimiter=config.CSV_DELIMITER)
         writer.writeheader()
         for card in cardData:
             writer.writerow(card)
+    doLogging(None, textData.RUN_INFO_COMPLETE)
     return
     
 def makeCardFromData(data: str)->Card:
@@ -314,6 +322,9 @@ def setupLogger(runInfo: Dict[str,str]):
     logger = logging.getLogger(config.LOGGER_NAME)
     #add support here for level depending on runInfo
     logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    logger.addHandler(handler)
     return
     
 
@@ -332,8 +343,11 @@ def run(arguments: list[str])->None:
     runInfo = proccessCommandLineArgs(args)
     #now set up the logger
     setupLogger(runInfo)
+    doLogging(None, textData.RUN_INFO_PROGRAM_START_MSG)
+    doLogging(None, textData.RUN_INFO_INFO_PROVIDED)
     #check if it's in setname mode
     if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
+        doLogging(None, textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
         #set name and pack type, so format the url
         urlOrFilename = formatUrl(runInfo["setName"], runInfo["packType"])
         #set the output filepath
@@ -343,6 +357,7 @@ def run(arguments: list[str])->None:
             defaultOutputDirectory.mkdir(exist_ok=True)
             runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(filename=possibleFilename)
     elif runInfo["mode"] == config.RUN_MODE_URL:
+        doLogging(None, textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
         #url case, so just extract it
         urlOrFilename = runInfo["url"]
         #validate it's a HotC url
@@ -354,6 +369,7 @@ def run(arguments: list[str])->None:
         #filepath given, so validate it and then extract items
         if Path(runInfo["filepath"]).exists():
             urlOrFilename = runInfo["filepath"]
+            doLogging(None, textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
         else:
             #file doesn't exist, so output error
             doLogging(config.LOGGER_WARN, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
@@ -396,3 +412,4 @@ def run(arguments: list[str])->None:
     
 if __name__ == "__main__":
     run(None) 
+    doLogging(None, textData.RUN_INFO_PROGRAM_COMPLETE)
