@@ -9,6 +9,7 @@ import csv
 import argparse
 import sys
 import logging
+from datetime import datetime
 
 class Card(TypedDict):
     name: str
@@ -320,15 +321,16 @@ def setupLogger(runInfo: Dict[str,str]):
     Use to set up the logger.
     """
     logger = logging.getLogger(config.LOGGER_NAME)
-    #add support here for level depending on runInfo
-    logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
-    logger.addHandler(handler)
+    if not len(logger.handlers):
+        #add support here for level depending on runInfo
+        logger.setLevel(logging.INFO)
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.INFO)
+        logger.addHandler(handler)
     return
     
 
-def run(arguments: list[str])->None:
+def run(arguments: list[str])->Dict[str,str]:
     """
     The main method that drives the entire program.
     """
@@ -364,7 +366,9 @@ def run(arguments: list[str])->None:
         if not re.match(config.URL_VALIDATION_PATTERN, urlOrFilename):
             #not a HotC url, so exit
             doLogging(config.LOGGER_WARN, textData.NOT_A_HOTC_URL_ERROR_MSG)
-            exit(1)
+            runInfo["status"] = config.RUN_STATUS_FAIL
+            runInfo["info"] = textData.NOT_A_HOTC_URL_ERROR_MSG
+            return runInfo
     else:
         #filepath given, so validate it and then extract items
         if Path(runInfo["filepath"]).exists():
@@ -373,7 +377,9 @@ def run(arguments: list[str])->None:
         else:
             #file doesn't exist, so output error
             doLogging(config.LOGGER_WARN, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
-            exit(1)
+            runInfo["status"] = config.RUN_STATUS_FAIL
+            runInfo["info"] = textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"])
+            return runInfo
     #now we have a url or filepath that is valid. Extract the data
     try:
         cards, resultFilename = convertAPageToCards(urlOrFilename)
@@ -381,19 +387,27 @@ def run(arguments: list[str])->None:
         #pack and data info wasn't found
         if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
             doLogging(config.LOGGER_WARN, textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+            runInfo["info"] = textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url)
         elif runInfo["mode"] == config.RUN_MODE_URL:
             doLogging(config.LOGGER_WARN, textData.URL_NOT_VALID.format(url=exc.url))
+            runInfo["info"] = textData.URL_NOT_VALID.format(url=exc.url)
         else:
             doLogging(config.LOGGER_WARN, str(exc))
-        exit(1)
+            runInfo["info"] = str(exc)
+        runInfo["status"] = config.RUN_STATUS_FAIL
+        return runInfo
     except requests.ConnectionError as exc:
         #invalid url
         doLogging(config.LOGGER_WARN, textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
-        exit(1)
+        runInfo["status"] = config.RUN_STATUS_FAIL
+        runInfo["info"] = textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename)
+        return runInfo
     except requests.HTTPError as exc:
         #some kind of http error
         doLogging(config.LOGGER_WARN, textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
-        exit(1)
+        runInfo["status"] = config.RUN_STATUS_FAIL
+        runInfo["info"] = textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason)
+        return runInfo
     #check if we don't already have an output filepath
     if runInfo["outputFilepath"] == None:
         #don't have one. So compute it
@@ -405,11 +419,47 @@ def run(arguments: list[str])->None:
         writeCardsToCSVFile(runInfo["outputFilepath"], cards)
     except OSError as exc:
         doLogging(config.LOGGER_WARN, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
-        exit(1)
-    return   
+        runInfo["status"] = config.RUN_STATUS_FAIL
+        runInfo["info"] = textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror)
+        return runInfo
+    runInfo["status"] = config.RUN_STATUS_SUCCESS
+    return runInfo
+        
+def generateFinalReport(startTime: datetime, runSummary:list[Dict[str,str]])->str:
+    """
+    Generate a final report for use in displaying to the user.
+    """
+    success = [textData.FINAL_REPORT_SUCCESS_FILES_WRITTEN]
+    fails = [textData.FINAL_REPORT_FILES_FAILED]
+    numSuccess = 0
+    numFail = 0
+    for summary in runSummary:
+        if summary["status"] == config.RUN_STATUS_SUCCESS:
+            success.append(textData.FINAL_REPORT_SUCCESS_SUMMARY.format(filename=summary["outputFilepath"]))
+            numSuccess += 1
+        else:
+            if summary["mode"] == config.RUN_MODE_URL:
+                fails.append(textData.FINAL_REPORT_FAIL_SUMMARY_URL.format(url=summary["url"]))
+            elif summary["mode"] == config.RUN_MODE_FILEPATH:
+                fails.append(textData.FINAL_REPORT_FAIL_SUMMARY_FILEPATH.format(filename=summary["filename"]))
+            else:
+                fails.append(textData.FINAL_REPORT_FAIL_SUMMARY_SETNAME_PACKTYPE.format(setname=summary["setname"],packtype=summary["packtype"]))
+            fails.append(textData.FINAL_REPORT_FAIL_SUMMARY_REASON.format(reason=summary["info"]))
+            numFail +=1
+    if len(success) == 1:
+        success.append(textData.FINAL_REPORT_NONE_LINE)
+    if len(fails) == 1:
+        fails.append(textData.FINAL_REPORT_NONE_LINE)
+    report = [textData.FINAL_REPORT_PROGRAM_COMPLETE,
+              textData.FINAL_REPORT_NUM_SUCCESS.format(numSuccess=numSuccess,totalNum=numSuccess+numFail),
+              textData.FINAL_REPORT_NUM_FAIL.format(numFail=numFail,totalNum=numSuccess+numFail),
+              textData.FINAL_REPORT_TIME_COMPLETE.format(time=datetime.now()-startTime)
+             ]
+    return "\n".join(report) + "\n" + "\n".join(success) + "\n" + "\n".join(fails)
         
     
     
 if __name__ == "__main__":
-    run(None) 
-    doLogging(None, textData.RUN_INFO_PROGRAM_COMPLETE)
+    startTime = datetime.now()
+    runInfo = run(None)
+    doLogging(None, generateFinalReport(startTime, [runInfo]))

@@ -4,6 +4,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 import builtins
 import requests
+from datetime import datetime, timedelta
 
 from hotCCSVGenerator import hotCCSVGenerator
 
@@ -507,51 +508,95 @@ class HotCCSVGeneratorTest(unittest.TestCase):
     def test_run_Filepath_gibberish(self):
         args = ["filepath", "adfas;ldkfa;jsdlkfajs;dflkas"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_FILEPATH)
+        self.assertEquals(runInfo["filepath"],args[1])
             
     def test_run_Filepath_nonexistant_file(self):
         args = ["filepath", "this/is/not/valid"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_FILEPATH)
+        self.assertEquals(runInfo["filepath"],args[1])
             
     def test_run_Url_gibberish(self):
         args = ["url", "ksadfasdfasdflkjl"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
+        self.assertEquals(runInfo["url"],args[1])
                 
     def test_run_Url_Non_HotC_url(self):
         args = ["url", "www.youtube.com"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
+        self.assertEquals(runInfo["url"],args[1])
             
     def test_run_Name_not_valid(self):
         args = ["name", "mother nature", "the embodiment of chaos"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_SET_AND_PACK)
+        self.assertEquals(runInfo["setName"],args[1])
+        self.assertEquals(runInfo["packType"],args[2])
             
     def test_run_url_HotC_not_valid(self):
         args = ["url", "https://www.heartofthecards.com/translations/bob"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
+        self.assertEquals(runInfo["url"],args[1])
             
     def test_run_url_not_translation(self):
         args = ["url", "https://www.heartofthecards.com/rfy/translations/"]
         
-        with self.assertRaises(SystemExit):
-            hotCCSVGenerator.run(args)
+        runInfo = hotCCSVGenerator.run(args)
+        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
+        self.assertEquals(runInfo["url"],args[1])
             
     def test_doLogging(self):
         runInfo = {"verbosity": None}
         hotCCSVGenerator.setupLogger(runInfo)
         
         hotCCSVGenerator.doLogging(None, "This should print logging.info.")
-        hotCCSVGenerator.doLogging(hotCCSVGenerator.config.LOGGER_WARN, "This should also print logging.warning.")        
+        hotCCSVGenerator.doLogging(hotCCSVGenerator.config.LOGGER_WARN, "This should also print logging.warning.")  
+
+    def test_generateFinalReport(self):
+        tenSecAgo = datetime.now() - timedelta(seconds=10)
+        runSummarySuccess1 = {"status": "success",
+                              "outputFilepath": "success/filepath/here"
+                             }
+        runSummarySuccess2 = {"status": "success",
+                              "outputFilepath": "another/path/here"
+                             }
+        runSummaryFail1 = {"status": "fail",
+                           "mode": "url",
+                           "url": "https://istheinternetonfire.com",
+                           "info" : "HTTP Error 418: Server is a teapot."
+                           }
+        runSummaryFail2 = {"status": "fail",
+                           "mode": "filepath",
+                           "filename": "totallyHomeworkNothingSuspicious.pdf",
+                           "info": "File was eaten by goats."
+                           }
+        runSummaryFail3 = {"status": "fail",
+                           "mode": "setname and packtype",
+                           "setname": "totally not a set name",
+                           "packtype": "totally not a pack type",
+                           "info": "A time-traveling detective changed the timeline. This set does not exist in this timeline."
+                           }
+        print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummarySuccess1]))
+        print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummaryFail1]))
+        print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummarySuccess1, runSummarySuccess2, runSummaryFail1, runSummaryFail2,runSummaryFail3]))
+        print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummaryFail1, runSummarySuccess1, runSummaryFail2, runSummarySuccess2, runSummaryFail3]))
         
         
         
