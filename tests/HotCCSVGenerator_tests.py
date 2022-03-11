@@ -545,6 +545,13 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
         with self.assertRaises(SystemExit):
             hotCCSVGenerator.run(args)
+            
+    def test_doLogging(self):
+        runInfo = {"verbosity": None}
+        hotCCSVGenerator.setupLogger(runInfo)
+        
+        hotCCSVGenerator.doLogging(None, "This should print logging.info.")
+        hotCCSVGenerator.doLogging(hotCCSVGenerator.config.LOGGER_WARN, "This should also print logging.warning.")        
         
         
         

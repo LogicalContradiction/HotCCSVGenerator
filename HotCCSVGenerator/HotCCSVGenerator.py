@@ -8,6 +8,7 @@ from pathlib import Path
 import csv
 import argparse
 import sys
+import logging
 
 class Card(TypedDict):
     name: str
@@ -238,7 +239,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     args = parser.parse_args(arguments)
     #check if the arg passed was for version
     if args.version:
-        print(config.VERSION_NUM)
+        doLogging(None, config.VERSION_NUM)
         exit(0)
     #create the structure to dictate how the program runs
     runInfo = {"mode": None, "outputFilepath": None}
@@ -294,6 +295,27 @@ def formatCommandLineArgs(args: list[str])->list[str]:
             result.append(args[index])
             index += 1
     return result
+    
+def doLogging(level: str, msg: str):
+    """
+    Do the logging.
+    """
+    logger = logging.getLogger(config.LOGGER_NAME)
+    if level == config.LOGGER_WARN:
+        logger.warning(msg)
+    else:
+        logger.info(msg)
+    return
+    
+def setupLogger(runInfo: Dict[str,str]):
+    """
+    Use to set up the logger.
+    """
+    logger = logging.getLogger(config.LOGGER_NAME)
+    #add support here for level depending on runInfo
+    logger.setLevel(logging.INFO)
+    return
+    
 
 def run(arguments: list[str])->None:
     """
@@ -308,6 +330,8 @@ def run(arguments: list[str])->None:
     args = formatCommandLineArgs(args)
     #now get the dict to determine how the program should run
     runInfo = proccessCommandLineArgs(args)
+    #now set up the logger
+    setupLogger(runInfo)
     #check if it's in setname mode
     if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
         #set name and pack type, so format the url
@@ -324,7 +348,7 @@ def run(arguments: list[str])->None:
         #validate it's a HotC url
         if not re.match(config.URL_VALIDATION_PATTERN, urlOrFilename):
             #not a HotC url, so exit
-            print(textData.NOT_A_HOTC_URL_ERROR_MSG)
+            doLogging(config.LOGGER_WARN, textData.NOT_A_HOTC_URL_ERROR_MSG)
             exit(1)
     else:
         #filepath given, so validate it and then extract items
@@ -332,7 +356,7 @@ def run(arguments: list[str])->None:
             urlOrFilename = runInfo["filepath"]
         else:
             #file doesn't exist, so output error
-            print(textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
+            doLogging(config.LOGGER_WARN, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
             exit(1)
     #now we have a url or filepath that is valid. Extract the data
     try:
@@ -340,19 +364,19 @@ def run(arguments: list[str])->None:
     except WebScrapeException as exc:
         #pack and data info wasn't found
         if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
-            print(textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+            doLogging(config.LOGGER_WARN, textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
         elif runInfo["mode"] == config.RUN_MODE_URL:
-            print(textData.URL_NOT_VALID.format(url=exc.url))
+            doLogging(config.LOGGER_WARN, textData.URL_NOT_VALID.format(url=exc.url))
         else:
-            print(str(exc))
+            doLogging(config.LOGGER_WARN, str(exc))
         exit(1)
     except requests.ConnectionError as exc:
         #invalid url
-        print(textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
+        doLogging(config.LOGGER_WARN, textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
         exit(1)
     except requests.HTTPError as exc:
         #some kind of http error
-        print(textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
+        doLogging(config.LOGGER_WARN, textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
         exit(1)
     #check if we don't already have an output filepath
     if runInfo["outputFilepath"] == None:
@@ -364,11 +388,9 @@ def run(arguments: list[str])->None:
     try:
         writeCardsToCSVFile(runInfo["outputFilepath"], cards)
     except OSError as exc:
-        print(textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
+        doLogging(config.LOGGER_WARN, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         exit(1)
-    return
-    
-#@TODO: MORE TESTS WITH OTHER MODES    
+    return   
         
     
     

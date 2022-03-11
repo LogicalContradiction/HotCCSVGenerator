@@ -83,3 +83,6 @@ FILENAME_REPLACE_CHARS = [(OUTPUT_FILENAME_REPLACE_WITH_A, "a"),
                          ]
                          
 HOTC_NOT_FOUND_TITLE_FRAGMENT = "404"
+
+LOGGER_NAME = "logger"
+LOGGER_WARN = "warn"
