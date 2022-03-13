@@ -58,21 +58,27 @@ class WebScrapeException(Exception):
 
       
 def makeSoupFromFile(filepath: str):
-    doLogging(None, textData.RUN_INFO_READING_HTML_FILE)
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.info(textData.RUN_INFO_READING_HTML_FILE)
+    #doLogging(None, textData.RUN_INFO_READING_HTML_FILE)
     with open(filepath, "r", encoding=config.FILE_ENCODING) as file:
         soup = BeautifulSoup(file, "html.parser")
-    doLogging(None, textData.RUN_INFO_COMPLETE)
+    logger.info(textData.RUN_INFO_COMPLETE)
+    #doLogging(None, textData.RUN_INFO_COMPLETE)
     return soup
     
 def makeSoupFromWebpage(url: str):
-    doLogging(None, textData.RUN_INFO_WEBPAGE.format(url=url))
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.info(textData.RUN_INFO_WEBPAGE.format(url=url))
+    #doLogging(None, textData.RUN_INFO_WEBPAGE.format(url=url))
     req = requests.get(url)
     req.raise_for_status()
     soup = BeautifulSoup(req.text, "html.parser")
     #check to see if the page wasn't found
     if config.HOTC_NOT_FOUND_TITLE_FRAGMENT in soup.head.title.text:
         raise WebScrapeException(url)
-    doLogging(None, textData.RUN_INFO_COMPLETE)
+    logger.info(textData.RUN_INFO_COMPLETE)
+    #doLogging(None, textData.RUN_INFO_COMPLETE)
     return soup
     
 def extractAndFormatTextField(data: str)->str:
@@ -122,28 +128,34 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
     """
     Extract the lines of data from Soup to turn into cards
     """
-    doLogging(None, textData.RUN_INFO_BEGIN_SCRAPING)
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.info(textData.RUN_INFO_BEGIN_SCRAPING)
+    #doLogging(None, textData.RUN_INFO_BEGIN_SCRAPING)
     text = soup.pre.text
     lines = re.split(config.PATTERN, text)
     result = []
     for dataLine in lines:
         result.append(dataLine.strip())
     del result[len(result)-1]
-    doLogging(None, textData.RUN_INFO_COMPLETE)
+    logger.info(textData.RUN_INFO_COMPLETE)
+    #doLogging(None, textData.RUN_INFO_COMPLETE)
     return result     
     
 def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
     """
     Open a file and write a list of Cards to items
     """
-    doLogging(None, textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.info(textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
+    #doLogging(None, textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
     #open the file
     with open(filepath, "w", encoding=config.FILE_ENCODING, newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=config.CSV_WRITER_FIELDNAMES, delimiter=config.CSV_DELIMITER)
         writer.writeheader()
         for card in cardData:
             writer.writerow(card)
-    doLogging(None, textData.RUN_INFO_COMPLETE)
+    logger.info(textData.RUN_INFO_COMPLETE)
+    #doLogging(None, textData.RUN_INFO_COMPLETE)
     return
     
 def makeCardFromData(data: str)->Card:
@@ -248,7 +260,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     args = parser.parse_args(arguments)
     #check if the arg passed was for version
     if args.version:
-        doLogging(None, config.VERSION_NUM)
+        print(config.VERSION_NUM)
         exit(0)
     #create the structure to dictate how the program runs
     runInfo = {"mode": None, "outputFilepath": None}
@@ -312,6 +324,8 @@ def doLogging(level: str, msg: str):
     logger = logging.getLogger(config.LOGGER_NAME)
     if level == config.LOGGER_INFO:
         logger.info(msg)
+    elif level == config.LOGGER_WARN:
+        logger.warning(msg)
     else:
         print(msg)
     return
@@ -345,11 +359,15 @@ def run(arguments: list[str])->Dict[str,str]:
     runInfo = proccessCommandLineArgs(args)
     #now set up the logger
     setupLogger(runInfo)
-    doLogging(None, textData.RUN_INFO_PROGRAM_START_MSG)
-    doLogging(None, textData.RUN_INFO_INFO_PROVIDED)
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.info(textData.RUN_INFO_PROGRAM_START_MSG)
+    logger.info(textData.RUN_INFO_INFO_PROVIDED)
+    #doLogging(None, textData.RUN_INFO_PROGRAM_START_MSG)
+    #doLogging(None, textData.RUN_INFO_INFO_PROVIDED)
     #check if it's in setname mode
     if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
-        doLogging(None, textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
+        logger.info(textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
+        #doLogging(None, textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
         #set name and pack type, so format the url
         urlOrFilename = formatUrl(runInfo["setName"], runInfo["packType"])
         #set the output filepath
@@ -359,13 +377,15 @@ def run(arguments: list[str])->Dict[str,str]:
             defaultOutputDirectory.mkdir(exist_ok=True)
             runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(filename=possibleFilename)
     elif runInfo["mode"] == config.RUN_MODE_URL:
-        doLogging(None, textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
+        logger.info(textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
+        #doLogging(None, textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
         #url case, so just extract it
         urlOrFilename = runInfo["url"]
         #validate it's a HotC url
         if not re.match(config.URL_VALIDATION_PATTERN, urlOrFilename):
             #not a HotC url, so exit
-            doLogging(config.LOGGER_INFO, textData.NOT_A_HOTC_URL_ERROR_MSG)
+            logger.warning(textData.NOT_A_HOTC_URL_ERROR_MSG)
+            #doLogging(config.LOGGER_INFO, textData.NOT_A_HOTC_URL_ERROR_MSG)
             runInfo["status"] = config.RUN_STATUS_FAIL
             runInfo["info"] = textData.NOT_A_HOTC_URL_ERROR_MSG
             return runInfo
@@ -373,10 +393,12 @@ def run(arguments: list[str])->Dict[str,str]:
         #filepath given, so validate it and then extract items
         if Path(runInfo["filepath"]).exists():
             urlOrFilename = runInfo["filepath"]
-            doLogging(None, textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
+            logger.info(textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
+            #doLogging(None, textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
         else:
             #file doesn't exist, so output error
-            doLogging(config.LOGGER_INFO, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
+            logger.warning(textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
+            #doLogging(config.LOGGER_INFO, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
             runInfo["status"] = config.RUN_STATUS_FAIL
             runInfo["info"] = textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"])
             return runInfo
@@ -386,25 +408,30 @@ def run(arguments: list[str])->Dict[str,str]:
     except WebScrapeException as exc:
         #pack and data info wasn't found
         if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
-            doLogging(config.LOGGER_INFO, textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+            logger.warning(textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+            #doLogging(config.LOGGER_INFO, textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
             runInfo["info"] = textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url)
         elif runInfo["mode"] == config.RUN_MODE_URL:
-            doLogging(config.LOGGER_INFO, textData.URL_NOT_VALID.format(url=exc.url))
+            logger.warning(textData.URL_NOT_VALID.format(url=exc.url))
+            #doLogging(config.LOGGER_INFO, textData.URL_NOT_VALID.format(url=exc.url))
             runInfo["info"] = textData.URL_NOT_VALID.format(url=exc.url)
         else:
-            doLogging(None, str(exc))
+            logger.warning(str(exc))
+            #doLogging(None, str(exc))
             runInfo["info"] = str(exc)
         runInfo["status"] = config.RUN_STATUS_FAIL
         return runInfo
     except requests.ConnectionError as exc:
         #invalid url
-        doLogging(config.LOGGER_INFO, textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
+        logger.warning(textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
+        #doLogging(config.LOGGER_INFO, textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename)
         return runInfo
     except requests.HTTPError as exc:
         #some kind of http error
-        doLogging(config.LOGGER_INFO, textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
+        logger.warning(textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
+        #doLogging(config.LOGGER_INFO, textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason)
         return runInfo
@@ -418,7 +445,8 @@ def run(arguments: list[str])->Dict[str,str]:
     try:
         writeCardsToCSVFile(runInfo["outputFilepath"], cards)
     except OSError as exc:
-        doLogging(config.LOGGER_INFO, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
+        logger.warning(textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
+        #doLogging(config.LOGGER_INFO, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror)
         return runInfo
@@ -462,4 +490,5 @@ def generateFinalReport(startTime: datetime, runSummary:list[Dict[str,str]])->st
 if __name__ == "__main__":
     startTime = datetime.now()
     runInfo = run(None)
-    doLogging(None, generateFinalReport(startTime, [runInfo]))
+    print(generateFinalReport(startTime, [runInfo]))
+    #doLogging(None, generateFinalReport(startTime, [runInfo]))

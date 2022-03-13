@@ -509,9 +509,9 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         args = ["filepath", "adfas;ldkfa;jsdlkfajs;dflkas"]
         
         runInfo = hotCCSVGenerator.run(args)
-        self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
-        self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_FILEPATH)
-        self.assertEquals(runInfo["filepath"],args[1])
+        self.assertEqual(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
+        self.assertEqual(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_FILEPATH)
+        self.assertEqual(runInfo["filepath"],args[1])
             
     def test_run_Filepath_nonexistant_file(self):
         args = ["filepath", "this/is/not/valid"]
@@ -562,12 +562,12 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
         self.assertEquals(runInfo["url"],args[1])
             
-    def test_doLogging(self):
-        runInfo = {"verbosity": None}
-        hotCCSVGenerator.setupLogger(runInfo)
+    #def test_doLogging(self):
+    #    runInfo = {"verbosity": None}
+    #    hotCCSVGenerator.setupLogger(runInfo)
         
-        hotCCSVGenerator.doLogging(None, "This should print logging.info.")
-        hotCCSVGenerator.doLogging(hotCCSVGenerator.config.LOGGER_WARN, "This should also print logging.warning.")  
+    #    hotCCSVGenerator.doLogging(None, "This should print logging.info.")
+    #    hotCCSVGenerator.doLogging(hotCCSVGenerator.config.LOGGER_WARN, "This should also print logging.warning.")  
 
     def test_generateFinalReport(self):
         tenSecAgo = datetime.now() - timedelta(seconds=10)
