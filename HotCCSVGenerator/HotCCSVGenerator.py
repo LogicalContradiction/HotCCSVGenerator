@@ -310,10 +310,10 @@ def doLogging(level: str, msg: str):
     Do the logging.
     """
     logger = logging.getLogger(config.LOGGER_NAME)
-    if level == config.LOGGER_WARN:
-        logger.warning(msg)
-    else:
+    if level == config.LOGGER_INFO:
         logger.info(msg)
+    else:
+        print(msg)
     return
     
 def setupLogger(runInfo: Dict[str,str]):
@@ -365,7 +365,7 @@ def run(arguments: list[str])->Dict[str,str]:
         #validate it's a HotC url
         if not re.match(config.URL_VALIDATION_PATTERN, urlOrFilename):
             #not a HotC url, so exit
-            doLogging(config.LOGGER_WARN, textData.NOT_A_HOTC_URL_ERROR_MSG)
+            doLogging(config.LOGGER_INFO, textData.NOT_A_HOTC_URL_ERROR_MSG)
             runInfo["status"] = config.RUN_STATUS_FAIL
             runInfo["info"] = textData.NOT_A_HOTC_URL_ERROR_MSG
             return runInfo
@@ -376,7 +376,7 @@ def run(arguments: list[str])->Dict[str,str]:
             doLogging(None, textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
         else:
             #file doesn't exist, so output error
-            doLogging(config.LOGGER_WARN, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
+            doLogging(config.LOGGER_INFO, textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"]))
             runInfo["status"] = config.RUN_STATUS_FAIL
             runInfo["info"] = textData.FILEPATH_NOT_FOUND_ERROR_MSG.format(filename=runInfo["filepath"])
             return runInfo
@@ -386,25 +386,25 @@ def run(arguments: list[str])->Dict[str,str]:
     except WebScrapeException as exc:
         #pack and data info wasn't found
         if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
-            doLogging(config.LOGGER_WARN, textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
+            doLogging(config.LOGGER_INFO, textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url))
             runInfo["info"] = textData.SET_NAME_PACK_TYPE_NOT_FOUND.format(setname=runInfo["setName"],packtype=runInfo["packType"],url=exc.url)
         elif runInfo["mode"] == config.RUN_MODE_URL:
-            doLogging(config.LOGGER_WARN, textData.URL_NOT_VALID.format(url=exc.url))
+            doLogging(config.LOGGER_INFO, textData.URL_NOT_VALID.format(url=exc.url))
             runInfo["info"] = textData.URL_NOT_VALID.format(url=exc.url)
         else:
-            doLogging(config.LOGGER_WARN, str(exc))
+            doLogging(None, str(exc))
             runInfo["info"] = str(exc)
         runInfo["status"] = config.RUN_STATUS_FAIL
         return runInfo
     except requests.ConnectionError as exc:
         #invalid url
-        doLogging(config.LOGGER_WARN, textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
+        doLogging(config.LOGGER_INFO, textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.CONNECTIONERROR_ERROR_MSG.format(url=urlOrFilename)
         return runInfo
     except requests.HTTPError as exc:
         #some kind of http error
-        doLogging(config.LOGGER_WARN, textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
+        doLogging(config.LOGGER_INFO, textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.HTTPERROR_ERROR_MSG.format(statusCode=exc.response.status_code, reason=exc.response.reason)
         return runInfo
@@ -418,7 +418,7 @@ def run(arguments: list[str])->Dict[str,str]:
     try:
         writeCardsToCSVFile(runInfo["outputFilepath"], cards)
     except OSError as exc:
-        doLogging(config.LOGGER_WARN, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
+        doLogging(config.LOGGER_INFO, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror)
         return runInfo
