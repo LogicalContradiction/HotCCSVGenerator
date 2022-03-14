@@ -427,16 +427,39 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         args = ["url", "www.example.com"]
         expectedResult = {"mode": "url",
                           "url": "www.example.com",
-                          "outputFilepath": None
+                          "outputFilepath": None,
+                          "verbose": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
+        
+    def test_processCommandLineArgs_verbose(self):
+        args = ["--verbose", "url", "www.thisDoesntMatter.com"]
+        expectedResult = {"mode": "url",
+                          "url": "www.thisDoesntMatter.com",
+                          "outputFilepath": None,
+                          "verbose": True
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_processCommandLineArgs_verbose(self):
+        args = ["-v", "url", "www.thisDoesntMatter.com"]
+        expectedResult = {"mode": "url",
+                          "url": "www.thisDoesntMatter.com",
+                          "outputFilepath": None,
+                          "verbose": True
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+                          
         
     def test_processCommandLineArgs_filepath(self):
         args = ["filepath", "this/is/a/filepath.txt"]
         expectedResult = {"mode": "filepath",
                           "filepath": "this/is/a/filepath.txt",
-                          "outputFilepath": None
+                          "outputFilepath": None,
+                          "verbose": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -446,7 +469,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         expectedResult = {"mode": "name",
                           "setName": "Symphogear XV",
                           "packType": "booster pack",
-                          "outputFilepath": None
+                          "outputFilepath": None,
+                          "verbose": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)

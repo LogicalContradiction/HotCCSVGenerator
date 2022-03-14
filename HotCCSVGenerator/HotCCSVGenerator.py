@@ -69,7 +69,8 @@ def makeSoupFromFile(filepath: str):
     
 def makeSoupFromWebpage(url: str):
     logger = logging.getLogger(config.LOGGER_NAME)
-    logger.info(textData.RUN_INFO_WEBPAGE.format(url=url))
+    logger.info(textData.RUN_INFO_WEBPAGE)
+    logger.debug(textData.RUN_INFO_WEBPAGE_URL.format(url=url))
     #doLogging(None, textData.RUN_INFO_WEBPAGE.format(url=url))
     req = requests.get(url)
     req.raise_for_status()
@@ -146,13 +147,15 @@ def writeCardsToCSVFile(filepath: Path, cardData: list[Card], forceOverwrite: bo
     Open a file and write a list of Cards to items
     """
     logger = logging.getLogger(config.LOGGER_NAME)
-    logger.info(textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
+    logger.info(textData.RUN_INFO_BEGIN_WRITING_TO_FILE)
+    logger.debug(textData.RUN_INFO_WRITING_FILENAME.format(filename=str(filepath)))
     #doLogging(None, textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
     #check if the file already exists
     if Path(filepath).exists() or forceOverwrite:
         validResponse = False
         while not validResponse:
             response = input(textData.FILE_ALREADY_EXISTS_WARNING.format(filename=str(filepath)))
+            print()
             if response in ["Y", "y"]:
                 validResponse = True
             elif response in ["N", "n"]:
@@ -266,6 +269,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
 
     #main parser arguments - apply to before the subtype
     parser.add_argument("--version", help=textData.PARSER_VERSION_HELP_TEXT, action="store_true")
+    parser.add_argument("-v", "--verbose", help=textData.PARSER_VERBOSE_HELP_TEXT, action="store_true")
     
     #parse the args. can also pass a list as an argument to parse that
     args = parser.parse_args(arguments)
@@ -286,6 +290,8 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
         runInfo["mode"] = config.RUN_MODE_SET_AND_PACK
         runInfo["setName"] = args.setName
         runInfo["packType"] = args.packType
+    #add the verbose
+    runInfo["verbose"] = args.verbose
     return runInfo
     
 def formatCommandLineArgs(args: list[str])->list[str]:
@@ -372,12 +378,12 @@ def run(arguments: list[str])->Dict[str,str]:
     setupLogger(runInfo)
     logger = logging.getLogger(config.LOGGER_NAME)
     logger.info(textData.RUN_INFO_PROGRAM_START_MSG)
-    logger.info(textData.RUN_INFO_INFO_PROVIDED)
+    logger.debug(textData.RUN_INFO_INFO_PROVIDED)
     #doLogging(None, textData.RUN_INFO_PROGRAM_START_MSG)
     #doLogging(None, textData.RUN_INFO_INFO_PROVIDED)
     #check if it's in setname mode
     if runInfo["mode"] == config.RUN_MODE_SET_AND_PACK:
-        logger.info(textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
+        logger.debug(textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
         #doLogging(None, textData.RUN_INFO_SETNAME_PACKTYPE_PROVIDED.format(setname=runInfo["setName"], packtype=runInfo["packType"]))
         #set name and pack type, so format the url
         urlOrFilename = formatUrl(runInfo["setName"], runInfo["packType"])
@@ -388,7 +394,7 @@ def run(arguments: list[str])->Dict[str,str]:
             defaultOutputDirectory.mkdir(exist_ok=True)
             runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(filename=possibleFilename)
     elif runInfo["mode"] == config.RUN_MODE_URL:
-        logger.info(textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
+        logger.debug(textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
         #doLogging(None, textData.RUN_INFO_URL_PROVIDED.format(url=runInfo["url"]))
         #url case, so just extract it
         urlOrFilename = runInfo["url"]
@@ -404,7 +410,7 @@ def run(arguments: list[str])->Dict[str,str]:
         #filepath given, so validate it and then extract items
         if Path(runInfo["filepath"]).exists():
             urlOrFilename = runInfo["filepath"]
-            logger.info(textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
+            logger.debug(textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
             #doLogging(None, textData.RUN_INFO_FILENAME_PROVIDED.format(filename=urlOrFilename))
         else:
             #file doesn't exist, so output error
@@ -455,16 +461,17 @@ def run(arguments: list[str])->Dict[str,str]:
     #we have the data and an output file, so write it.
     try:
         writeCardsToCSVFile(runInfo["outputFilepath"], cards, False)
+    except FileExistsError as exc:
+        logger.warning(textData.FILE_ALREADY_EXISTS_USER_CHOSE_NOT_TO_OVERWRITE)
+        logger.warning(textData.FILE_ALREADY_EXISTS_ENDING_EXECUTION)
+        runInfo["status"] = config.RUN_STATUS_FAIL
+        runInfo["info"] = textData.FILE_ALREADY_EXISTS_NO_OVERWRITE_REASON.format(filename=runInfo["outputFilepath"])
+        return runInfo
     except OSError as exc:
         logger.warning(textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         #doLogging(config.LOGGER_INFO, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror)
-        return runInfo
-    except FileExistsError as exc:
-        logger.warning(textData.FILE_ALREADY_EXISTS_USER_CHOSE_NOT_TO_OVERWRITE)
-        runInfo["status"] = config.RUN_STATUS_FAIL
-        runInfo["info"] = textData.FILE_ALREADY_EXISTS_USER_CHOSE_NOT_TO_OVERWRITE
         return runInfo
     runInfo["status"] = config.RUN_STATUS_SUCCESS
     return runInfo
