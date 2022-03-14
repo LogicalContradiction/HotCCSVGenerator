@@ -42,6 +42,8 @@ You can simply specify the name of the set and what type of pack you want, and t
 ```
 -h, --help                           Print the help text and exit.
 --version                            Print the version number and exit.
+-v, --verbose                        Print various debugging information.
+-q, --quiet                          Activate quiet mode.
 ```
 
 ## DISCLAIMER: 

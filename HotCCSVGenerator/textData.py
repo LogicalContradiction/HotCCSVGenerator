@@ -11,9 +11,9 @@ SUBPARSER_PACK_HELP_TEXT = "Use this command to specify a set name and pack type
 SUBPARSER_PACK_ARGUMENT_ONE_HELP_TEXT = "The name of the set to get data about. This is normally the name of the series."
 SUBPARSER_PACK_ARGUMENT_TWO_HELP_TEXT = "The type of pack for a particular set to get the data about. This is normally \"trial deck\", \"booster pack\", or \"extra deck\", but there are also a few other miscellaneous types."
 
-PARSER_VERSION_HELP_TEXT = "Prints the version number and exit."
-PARSER_VERBOSE_HELP_TEXT = "Print various debugging information while running."
-PARSER_QUIET_HELP_TEXT = "Supress output of the program. Will only print on start of a run, on error, and a final report."
+PARSER_VERSION_HELP_TEXT = "Print the version number and exit."
+PARSER_VERBOSE_HELP_TEXT = "Print various debugging information."
+PARSER_QUIET_HELP_TEXT = "Activate quiet mode. Will only print on start of a run, on error, and a final report."
 PARSER_OUTPUT_FILE_HELP_TEXT = "Specify a filepath to output to"
 PARSER_ABORT_ON_ERROR_HELP_TEXT = "Abort converting any more pages if an error occurs."
 PARSER_BATCH_FILE_HELP_TEXT = "File containing HotC urls, .html files, or set name and pack type separated by a tab character, with only one of these per line. Following each of these arguments should be another tab character, which is then followed by the output filename. If no filename is specified, the default is used. Lines starting with '#' are treated as comments and ignored."
