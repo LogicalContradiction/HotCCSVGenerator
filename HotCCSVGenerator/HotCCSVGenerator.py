@@ -269,7 +269,11 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
 
     #main parser arguments - apply to before the subtype
     parser.add_argument("--version", help=textData.PARSER_VERSION_HELP_TEXT, action="store_true")
-    parser.add_argument("-v", "--verbose", help=textData.PARSER_VERBOSE_HELP_TEXT, action="store_true")
+    
+    verbosityGroup = parser.add_mutually_exclusive_group()
+    
+    verbosityGroup.add_argument("-v", "--verbose", help=textData.PARSER_VERBOSE_HELP_TEXT, action="store_true")
+    verbosityGroup.add_argument("-q", "--quiet", help=textData.PARSER_QUIET_HELP_TEXT, action="store_true")
     
     #parse the args. can also pass a list as an argument to parse that
     args = parser.parse_args(arguments)
@@ -290,8 +294,9 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
         runInfo["mode"] = config.RUN_MODE_SET_AND_PACK
         runInfo["setName"] = args.setName
         runInfo["packType"] = args.packType
-    #add the verbose
+    #add the other args
     runInfo["verbose"] = args.verbose
+    runInfo["quiet"] = args.quiet
     return runInfo
     
 def formatCommandLineArgs(args: list[str])->list[str]:
@@ -358,6 +363,10 @@ def setupLogger(runInfo: Dict[str,str]):
             logger.setLevel(logging.DEBUG)
             handler = logging.StreamHandler()
             handler.setLevel(logging.DEBUG)
+        elif runInfo["quiet"]:
+            logger.setLevel(logging.WARNING)
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.WARNING)
         else:
             logger.setLevel(logging.INFO)
             handler = logging.StreamHandler()
