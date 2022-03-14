@@ -141,13 +141,24 @@ def getLinesFromSoup(soup: BeautifulSoup)->list[str]:
     #doLogging(None, textData.RUN_INFO_COMPLETE)
     return result     
     
-def writeCardsToCSVFile(filepath: Path, cardData: list[Card])->None:
+def writeCardsToCSVFile(filepath: Path, cardData: list[Card], forceOverwrite: bool)->None:
     """
     Open a file and write a list of Cards to items
     """
     logger = logging.getLogger(config.LOGGER_NAME)
     logger.info(textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
     #doLogging(None, textData.RUN_INFO_BEGIN_WRITING_TO_FILE.format(filename=str(filepath)))
+    #check if the file already exists
+    if Path(filepath).exists() or forceOverwrite:
+        validResponse = False
+        while not validResponse:
+            response = input(textData.FILE_ALREADY_EXISTS_WARNING.format(filename=str(filepath)))
+            if response in ["Y", "y"]:
+                validResponse = True
+            elif response in ["N", "n"]:
+                raise FileExistsError()
+            else:
+                print(textData.FILE_ALREADY_EXISTS_NOT_VALID_RESPONSE)       
     #open the file
     with open(filepath, "w", encoding=config.FILE_ENCODING, newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=config.CSV_WRITER_FIELDNAMES, delimiter=config.CSV_DELIMITER)
@@ -443,12 +454,17 @@ def run(arguments: list[str])->Dict[str,str]:
         runInfo["outputFilepath"] = defaultOutputDirectory / config.DEFAULT_FILENAME.format(filename=resultFilename)
     #we have the data and an output file, so write it.
     try:
-        writeCardsToCSVFile(runInfo["outputFilepath"], cards)
+        writeCardsToCSVFile(runInfo["outputFilepath"], cards, False)
     except OSError as exc:
         logger.warning(textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         #doLogging(config.LOGGER_INFO, textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror))
         runInfo["status"] = config.RUN_STATUS_FAIL
         runInfo["info"] = textData.WRITE_OSERROR_ERROR_MSG.format(filename=exc.filename, errormsg=exc.strerror)
+        return runInfo
+    except FileExistsError as exc:
+        logger.warning(textData.FILE_ALREADY_EXISTS_USER_CHOSE_NOT_TO_OVERWRITE)
+        runInfo["status"] = config.RUN_STATUS_FAIL
+        runInfo["info"] = textData.FILE_ALREADY_EXISTS_USER_CHOSE_NOT_TO_OVERWRITE
         return runInfo
     runInfo["status"] = config.RUN_STATUS_SUCCESS
     return runInfo

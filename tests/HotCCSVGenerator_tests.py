@@ -266,7 +266,9 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         global dataOne
         c = hotCCSVGenerator.Card(dataOne)
         cardData = [c]
-        hotCCSVGenerator.writeCardsToCSVFile(TEST_FILE, cardData)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                hotCCSVGenerator.writeCardsToCSVFile(TEST_FILE, cardData, True)
         self.assertEqual(0,0)
         
     def test_writeCardsToCSVFile_withMock(self):
@@ -289,7 +291,9 @@ class HotCCSVGeneratorTest(unittest.TestCase):
             calls.append(call(res))
         
         with patch("builtins.open", m) as mockedFile:
-            hotCCSVGenerator.writeCardsToCSVFile(fakeFilepath, cardData)
+            with patch('builtins.print') as mock_print:
+                with patch('builtins.input', return_value='y') as mock_input:
+                    hotCCSVGenerator.writeCardsToCSVFile(fakeFilepath, cardData, True)
             #assert if opened file on write mode "w"
             mockedFile.assert_called_once_with(fakeFilepath, "w", encoding="utf8", newline="")
             #assert if write cas called from the file opened with in the order and with the params of calls 
@@ -496,8 +500,9 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
         with open(correctCSVDataFilepath, "r", encoding=FILE_ENCODING) as file:
             expectedResult = file.readlines()
-        
-        hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                hotCCSVGenerator.run(args)
         
         self.assertTrue(Path(expectedCSVFilepath).exists())
         
@@ -507,40 +512,45 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         
     def test_run_Filepath_gibberish(self):
         args = ["filepath", "adfas;ldkfa;jsdlkfajs;dflkas"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEqual(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEqual(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_FILEPATH)
         self.assertEqual(runInfo["filepath"],args[1])
             
     def test_run_Filepath_nonexistant_file(self):
         args = ["filepath", "this/is/not/valid"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_FILEPATH)
         self.assertEquals(runInfo["filepath"],args[1])
             
     def test_run_Url_gibberish(self):
         args = ["url", "ksadfasdfasdflkjl"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
         self.assertEquals(runInfo["url"],args[1])
                 
     def test_run_Url_Non_HotC_url(self):
         args = ["url", "www.youtube.com"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
         self.assertEquals(runInfo["url"],args[1])
             
     def test_run_Name_not_valid(self):
         args = ["name", "mother nature", "the embodiment of chaos"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_SET_AND_PACK)
         self.assertEquals(runInfo["setName"],args[1])
@@ -548,16 +558,18 @@ class HotCCSVGeneratorTest(unittest.TestCase):
             
     def test_run_url_HotC_not_valid(self):
         args = ["url", "https://www.heartofthecards.com/translations/bob"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
         self.assertEquals(runInfo["url"],args[1])
             
     def test_run_url_not_translation(self):
         args = ["url", "https://www.heartofthecards.com/rfy/translations/"]
-        
-        runInfo = hotCCSVGenerator.run(args)
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='y') as mock_input:
+                runInfo = hotCCSVGenerator.run(args)
         self.assertEquals(runInfo["status"], hotCCSVGenerator.config.RUN_STATUS_FAIL)
         self.assertEquals(runInfo["mode"], hotCCSVGenerator.config.RUN_MODE_URL)
         self.assertEquals(runInfo["url"],args[1])
@@ -597,7 +609,16 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummaryFail1]))
         print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummarySuccess1, runSummarySuccess2, runSummaryFail1, runSummaryFail2,runSummaryFail3]))
         print(hotCCSVGenerator.generateFinalReport(tenSecAgo, [runSummaryFail1, runSummarySuccess1, runSummaryFail2, runSummarySuccess2, runSummaryFail3]))
-        
+       
+    def test_writeCardsToCSVFile_no_overwrite(self):
+        TEST_FILE = Path(__file__).parent /"testData/testCSVFile.csv"
+        global dataOne
+        c = hotCCSVGenerator.Card(dataOne)
+        cardData = [c]
+        with patch('builtins.print') as mock_print:
+            with patch('builtins.input', return_value='n') as mock_input:
+                with self.assertRaises(FileExistsError):
+                    hotCCSVGenerator.writeCardsToCSVFile(TEST_FILE, cardData, False)
         
         
 if __name__ == "__main__":

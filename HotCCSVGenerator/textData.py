@@ -54,3 +54,7 @@ FINAL_REPORT_FAIL_SUMMARY_SETNAME_PACKTYPE = " Set name: {setname}\n Pack type: 
 FINAL_REPORT_FAIL_SUMMARY_REASON = "  Reason: {reason}"
 FINAL_REPORT_NONE_LINE = " None"
 
+FILE_ALREADY_EXISTS_WARNING = "Warning: File {filename} already exists. Continuing would overwrite this file. Continue? [Y/n]:"
+FILE_ALREADY_EXISTS_NOT_VALID_RESPONSE = "That is not a valid response please input either \"Y\" for Yes, or \"n\" for no."
+FILE_ALREADY_EXISTS_USER_CHOSE_NOT_TO_OVERWRITE = "You have chosen not to overwrite the file. Ending execution."
+
