@@ -354,9 +354,14 @@ def setupLogger(runInfo: Dict[str,str]):
     logger = logging.getLogger(config.LOGGER_NAME)
     if not len(logger.handlers):
         #add support here for level depending on runInfo
-        logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.INFO)
+        if runInfo["verbose"]:
+            logger.setLevel(logging.DEBUG)
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.INFO)
         logger.addHandler(handler)
     return
     

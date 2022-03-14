@@ -1,4 +1,4 @@
-VERSION_NUM = "hotCCSVGenerator version 1.1"
+VERSION_NUM = "hotCCSVGenerator version 1.3"
 PATTERN = r"==+"
 FILE_ENCODING= "utf8"
 TEXTLINE_STARTER = "TEXT: "
