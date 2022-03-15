@@ -271,9 +271,10 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     parser.add_argument("--version", help=textData.PARSER_VERSION_HELP_TEXT, action="store_true")
     
     verbosityGroup = parser.add_mutually_exclusive_group()
-    
     verbosityGroup.add_argument("-v", "--verbose", help=textData.PARSER_VERBOSE_HELP_TEXT, action="store_true")
     verbosityGroup.add_argument("-q", "--quiet", help=textData.PARSER_QUIET_HELP_TEXT, action="store_true")
+    
+    parser.add_argument("-o", "--output-file", help=textData.PARSER_OUTPUT_FILE_HELP_TEXT, metavar="FILENAME")
     
     #parse the args. can also pass a list as an argument to parse that
     args = parser.parse_args(arguments)
@@ -282,7 +283,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
         print(config.VERSION_NUM)
         exit(0)
     #create the structure to dictate how the program runs
-    runInfo = {"mode": None, "outputFilepath": None}
+    runInfo = {"mode": None, "outputFilepath": args.output_file}
     #figure out which subprocessor was found:
     if "filepath" in args:
         runInfo["mode"] = config.RUN_MODE_FILEPATH
@@ -297,6 +298,10 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     #add the other args
     runInfo["verbose"] = args.verbose
     runInfo["quiet"] = args.quiet
+    if args.output_file != None and "/" not in args.output_file:
+        defaultOutputDirectory = Path(__file__).parent.parent / config.DEFAULT_FILEPATH
+        defaultOutputDirectory.mkdir(exist_ok=True)
+        runInfo["outputFilepath"] = defaultOutputDirectory / runInfo["outputFilepath"]
     return runInfo
     
 def formatCommandLineArgs(args: list[str])->list[str]:

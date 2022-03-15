@@ -670,6 +670,40 @@ class HotCCSVGeneratorTest(unittest.TestCase):
             with patch('builtins.input', return_value='n') as mock_input:
                 with self.assertRaises(FileExistsError):
                     hotCCSVGenerator.writeCardsToCSVFile(TEST_FILE, cardData, False)
+                    
+    def test_proccessCommandLineArgs_outputFile_char(self):
+        args = ["-o", "outputFile.csv", "filepath", "this/is/a/filepath.txt"]
+        expectedResult = {"mode": "filepath",
+                          "filepath": "this/is/a/filepath.txt",
+                          "outputFilepath": "outputFile.csv",
+                          "verbose": False,
+                          "quiet": False
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+    
+    def test_proccessCommandLineArgs_outputFile(self):
+        args = ["--output-file", "outputFile.csv", "filepath", "this/is/a/filepath.txt"]
+        expectedResult = {"mode": "filepath",
+                          "filepath": "this/is/a/filepath.txt",
+                          "outputFilepath": "outputFile.csv",
+                          "verbose": False,
+                          "quiet": False
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+    
+    def test_proccessCommandLineArgs_outputFile(self):
+        args = ["--output-file", "outputFile.csv", "filepath", "this/is/a/filepath.txt"]
+        expectedResult = {"mode": "filepath",
+                          "filepath": "this/is/a/filepath.txt",
+                          "outputFilepath": Path(__file__).parent.parent / "output" / "outputFile.csv",
+                          "verbose": False,
+                          "quiet": False
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+   
         
         
 if __name__ == "__main__":
