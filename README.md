@@ -44,6 +44,10 @@ You can simply specify the name of the set and what type of pack you want, and t
 --version                            Print the version number and exit.
 -v, --verbose                        Print various debugging information.
 -q, --quiet                          Activate quiet mode.
+-o, --output-file FILENAME           Change the output filename.
+--abort-on-error                     Abort the run on errors (currently 
+                                     does this by default, only useful for
+                                     batch runs).
 ```
 
 ## DISCLAIMER: 
