@@ -275,6 +275,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     verbosityGroup.add_argument("-q", "--quiet", help=textData.PARSER_QUIET_HELP_TEXT, action="store_true")
     
     parser.add_argument("-o", "--output-file", help=textData.PARSER_OUTPUT_FILE_HELP_TEXT, metavar="FILENAME")
+    parser.add_argument("--abort-on-error", help=textData.PARSER_ABORT_ON_ERROR_HELP_TEXT, action="store_true")
     
     #parse the args. can also pass a list as an argument to parse that
     args = parser.parse_args(arguments)
@@ -298,6 +299,7 @@ def proccessCommandLineArgs(arguments: list[str])->Dict[str,str]:
     #add the other args
     runInfo["verbose"] = args.verbose
     runInfo["quiet"] = args.quiet
+    runInfo["abortOnError"] = args.abort_on_error
     if args.output_file != None and "/" not in args.output_file:
         defaultOutputDirectory = Path(__file__).parent.parent / config.DEFAULT_FILEPATH
         defaultOutputDirectory.mkdir(exist_ok=True)

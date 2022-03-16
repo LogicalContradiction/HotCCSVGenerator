@@ -429,7 +429,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "url": "www.example.com",
                           "outputFilepath": None,
                           "verbose": False,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -440,7 +441,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "url": "www.thisDoesntMatter.com",
                           "outputFilepath": None,
                           "verbose": True,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -451,7 +453,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "url": "www.thisDoesntMatter.com",
                           "outputFilepath": None,
                           "verbose": True,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -462,7 +465,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "url": "www.thisDoesntMatter.com",
                           "outputFilepath": None,
                           "verbose": False,
-                          "quiet": True
+                          "quiet": True,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -473,7 +477,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "url": "www.thisDoesntMatter.com",
                           "outputFilepath": None,
                           "verbose": False,
-                          "quiet": True
+                          "quiet": True,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -485,7 +490,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "filepath": "this/is/a/filepath.txt",
                           "outputFilepath": None,
                           "verbose": False,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -497,7 +503,8 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "packType": "booster pack",
                           "outputFilepath": None,
                           "verbose": False,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -675,20 +682,10 @@ class HotCCSVGeneratorTest(unittest.TestCase):
         args = ["-o", "outputFile.csv", "filepath", "this/is/a/filepath.txt"]
         expectedResult = {"mode": "filepath",
                           "filepath": "this/is/a/filepath.txt",
-                          "outputFilepath": "outputFile.csv",
+                          "outputFilepath": Path(__file__).parent.parent / "output" /"outputFile.csv",
                           "verbose": False,
-                          "quiet": False
-                         }
-        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
-        self.assertEqual(expectedResult, actualResult)
-    
-    def test_proccessCommandLineArgs_outputFile(self):
-        args = ["--output-file", "outputFile.csv", "filepath", "this/is/a/filepath.txt"]
-        expectedResult = {"mode": "filepath",
-                          "filepath": "this/is/a/filepath.txt",
-                          "outputFilepath": "outputFile.csv",
-                          "verbose": False,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
@@ -699,7 +696,20 @@ class HotCCSVGeneratorTest(unittest.TestCase):
                           "filepath": "this/is/a/filepath.txt",
                           "outputFilepath": Path(__file__).parent.parent / "output" / "outputFile.csv",
                           "verbose": False,
-                          "quiet": False
+                          "quiet": False,
+                          "abortOnError": False
+                         }
+        actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
+        self.assertEqual(expectedResult, actualResult)
+        
+    def test_proccessCommandLineArgs_abortOnError(self):
+        args = ["--output-file", "outputFile.csv", "--abort-on-error", "filepath", "this/is/a/filepath.txt"]
+        expectedResult = {"mode": "filepath",
+                          "filepath": "this/is/a/filepath.txt",
+                          "outputFilepath": Path(__file__).parent.parent / "output" / "outputFile.csv",
+                          "verbose": False,
+                          "quiet": False,
+                          "abortOnError": True
                          }
         actualResult = hotCCSVGenerator.proccessCommandLineArgs(args)
         self.assertEqual(expectedResult, actualResult)
