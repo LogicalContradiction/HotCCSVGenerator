@@ -1,5 +1,5 @@
-from . import config
-from . import textData
+import config
+import textData
 from bs4 import BeautifulSoup
 import re
 import requests
